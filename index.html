@@ -577,12 +577,36 @@ btnUpload.onclick = async () => {
         });
 
         const geminiData = await geminiRes.json();
+
+        // 1. فحص وجود خطأ صريح من السيرفر
         if (geminiData.error) {
-            throw new Error(geminiData.error.message);
+            throw new Error(geminiData.error.message || JSON.stringify(geminiData.error));
         }
 
-        const recitedRawText = geminiData.candidates[0].content.parts[0].text.trim();
+        // 2. فحص هل تم حجب الرد بسبب الأمان أو الفلترة
+        if (geminiData.promptFeedback && geminiData.promptFeedback.blockReason) {
+            throw new Error(`تم إيقاف المعالجة من السيرفر بسبب: ${geminiData.promptFeedback.blockReason}`);
+        }
 
+        // 3. فحص وجود المرشحات (candidates) بأمان تام لتفادي الخطأ
+        if (!geminiData.candidates || geminiData.candidates.length === 0) {
+            console.error("Gemini Full Response:", geminiData);
+            throw new Error("لم يتم استخراج أي نص من التسجيل، تأكد من وضوح الصوت ومطابقة الآيات المحددة.");
+        }
+
+        const candidate = geminiData.candidates[0];
+        if (candidate.finishReason && candidate.finishReason !== "STOP") {
+            console.warn("Finish Reason:", candidate.finishReason);
+        }
+
+        // استخراج النص بأمان مع التعامل مع احتمالية عدم وجود parts
+        const parts = candidate.content?.parts;
+        if (!parts || parts.length === 0 || !parts[0].text) {
+            throw new Error("وصل الرد فارغاً من النموذج، يرجى إعادة تسجيل الصوت بوضوح.");
+        }
+
+        const recitedRawText = parts[0].text.trim();
+        console.log("النص المفرغ بنجاح:", recitedRawText);
         // تجهيز مصفوفة كلمات المصحف مع فواصل الآيات
         const flatReferenceWords = [];
         for (let idx = 0; idx < refWords.length; idx++) {
