@@ -267,6 +267,7 @@
         <button id="btnStop" class="btn-stop" disabled>⏹️ إيقاف التسجيل</button>
         <button id="btnPlay" class="btn-play" disabled>▶️ استماع للتسجيل</button>
         <button id="btnUpload" class="btn-upload" disabled>🚀 تفريغ وتقييم التسميع</button>
+        <button id="btnSave" class="btn-save" style="background-color: #0284c7; color: white;" disabled>💾 حفظ على الهاتف</button>
     </div>
 
     <div class="status-box">
@@ -294,6 +295,31 @@
 </div>
 
 <script>
+
+    const btnSave = document.getElementById('btnSave');
+
+// تفعيله داخل دالة onstop
+mediaRecorder.onstop = () => {
+    ...
+    btnSave.disabled = false;
+};
+
+// كود التنزيل المباشر على الهاتف
+btnSave.onclick = () => {
+    if (!currentAudioBlob) return;
+    const sName = SURAHS.find(s => s.id === parseInt(surahSelect.value)).name;
+    const fileName = `تسميع_${sName}_${fromAyah.value}_إلى_${toAyah.value}.webm`;
+
+    const url = URL.createObjectURL(currentAudioBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    statusTxt.textContent = `💾 تم حفظ التسجيل في مجلد التنزيلات باسم (${fileName})`;
+};
 const SURAHS = [
     {id: 1, name: "الفاتحة", count: 7}, {id: 2, name: "البقرة", count: 286}, {id: 3, name: "آل عمران", count: 200},
     {id: 4, name: "النساء", count: 176}, {id: 5, name: "المائدة", count: 120}, {id: 6, name: "الأنعام", count: 165},
