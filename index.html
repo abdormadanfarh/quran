@@ -54,7 +54,7 @@
             font-size: 0.9rem;
         }
 
-        input[type="password"], select {
+        input[type="password"], input[type="text"], select {
             width: 100%;
             padding: 10px;
             border: 1px solid var(--border-col);
@@ -64,6 +64,13 @@
             background-color: #fafafa;
         }
 
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
         .selectors-grid {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
@@ -71,8 +78,8 @@
             margin-bottom: 15px;
         }
 
-        @media (max-width: 600px) {
-            .selectors-grid {
+        @media (max-width: 650px) {
+            .config-grid, .selectors-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -208,9 +215,32 @@
 <div class="container">
     <h2>📖 المسمّع القرآني التفاعلي</h2>
 
-    <div class="input-group">
-        <label for="apiKey">Gemini API Key (يُحفظ تلقائياً في المتصفح):</label>
-        <input type="password" id="apiKey" placeholder="AIzaSy...">
+    <div class="config-grid">
+        <div>
+            <label for="apiKey">Gemini API Key (يُحفظ تلقائياً في المتصفح):</label>
+            <input type="password" id="apiKey" placeholder="AIzaSy...">
+        </div>
+        <div>
+            <label for="modelSelect">اختر الموديل:</label>
+            <select id="modelSelect">
+                <!-- موديلات الجيل الحديث 2.5 و 3.x -->
+                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (سريع ومتوازن)</option>
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro (دقة استماع فائقة)</option>
+                <option value="gemini-3.6-flash">Gemini 3.6 Flash (تجريبي سريع)</option>
+                <option value="gemini-3.6-pro">Gemini 3.6 Pro (تجريبي ذكي)</option>
+                <option value="gemini-2.5-flash-thinking">Gemini 2.5 Flash Thinking</option>
+                <!-- موديلات الجيل 1.5 -->
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (خفيف)</option>
+                <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash-8B (خفيف جداً)</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro (النسخة المستقرة)</option>
+                <option value="custom">✏️ إدخال اسم موديل مخصص يدوي...</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="customModelBox" class="input-group" style="display:none;">
+        <label for="customModelInput">اسم الموديل المخصص:</label>
+        <input type="text" id="customModelInput" placeholder="مثال: gemini-experimental أو gemini-3.6">
     </div>
 
     <div class="selectors-grid">
@@ -305,6 +335,9 @@ const surahSelect = document.getElementById('surahSelect');
 const fromAyah = document.getElementById('fromAyah');
 const toAyah = document.getElementById('toAyah');
 const apiKeyInput = document.getElementById('apiKey');
+const modelSelect = document.getElementById('modelSelect');
+const customModelBox = document.getElementById('customModelBox');
+const customModelInput = document.getElementById('customModelInput');
 const btnRecord = document.getElementById('btnRecord');
 const btnStop = document.getElementById('btnStop');
 const btnPlay = document.getElementById('btnPlay');
@@ -323,6 +356,7 @@ let audioChunks = [];
 let currentAudioBlob = null;
 let mediaStream = null;
 
+// إدارة المفتاح والموديل من الذاكرة المحلية
 if (localStorage.getItem('gemini_api_key')) {
     apiKeyInput.value = localStorage.getItem('gemini_api_key');
 }
@@ -330,6 +364,35 @@ apiKeyInput.addEventListener('change', () => {
     localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
 });
 
+if (localStorage.getItem('gemini_model')) {
+    const savedModel = localStorage.getItem('gemini_model');
+    const exists = Array.from(modelSelect.options).some(o => o.value === savedModel);
+    if (exists) {
+        modelSelect.value = savedModel;
+    } else {
+        modelSelect.value = "custom";
+        customModelBox.style.display = "block";
+        customModelInput.value = savedModel;
+    }
+}
+
+modelSelect.addEventListener('change', () => {
+    if (modelSelect.value === 'custom') {
+        customModelBox.style.display = 'block';
+        customModelInput.focus();
+    } else {
+        customModelBox.style.display = 'none';
+        localStorage.setItem('gemini_model', modelSelect.value);
+    }
+});
+
+customModelInput.addEventListener('change', () => {
+    if (modelSelect.value === 'custom') {
+        localStorage.setItem('gemini_model', customModelInput.value.trim());
+    }
+});
+
+// تعبئة قائمة السور
 SURAHS.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.id;
@@ -375,6 +438,7 @@ toAyah.addEventListener('change', () => {
 
 updateAyahSelectors();
 
+// منطق التسجيل السليم المتوافق
 btnRecord.onclick = async () => {
     try {
         if (!audioPlayer.paused) {
@@ -561,6 +625,16 @@ btnUpload.onclick = async () => {
         return;
     }
 
+    let activeModel = modelSelect.value;
+    if (activeModel === 'custom') {
+        activeModel = customModelInput.value.trim();
+        if (!activeModel) {
+            alert("يرجى كتابة اسم الموديل المخصص!");
+            customModelInput.focus();
+            return;
+        }
+    }
+
     const surahId = parseInt(surahSelect.value);
     const startAyah = parseInt(fromAyah.value);
     const endAyah = parseInt(toAyah.value);
@@ -585,7 +659,7 @@ btnUpload.onclick = async () => {
             }
         }
 
-        statusTxt.textContent = "🤖 جاري تفريغ الصوت وتحليله عبر الموديل...";
+        statusTxt.textContent = `🤖 جاري التحليل والتفريغ عبر (${activeModel})...`;
 
         const base64Audio = await blobToBase64(currentAudioBlob);
         const mimeType = currentAudioBlob.type.split(';')[0] || 'audio/webm';
@@ -613,7 +687,7 @@ btnUpload.onclick = async () => {
             }
         };
 
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${key}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(requestBody)
