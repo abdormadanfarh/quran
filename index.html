@@ -683,11 +683,57 @@ btnUpload.onclick = async () => {
 
                 finalUnifiedHtml += `<span class="word-missing" title="لم تُقرأ / منسية">${missingQuran}</span> `;
 
-                for (let k = op.i1; k < op.i2; k++) {
-                    if (flatReferenceWords[k].ayah_marker) {
-                        finalUnifiedHtml += flatReferenceWords[k].ayah_marker + " ";
+                for (const op of opcodes) {
+            if (op.tag === 'equal') {
+                for (let idx = op.i1; idx < op.i2; idx++) {
+                    correctCount++;
+                    const item = flatReferenceWords[idx];
+                    if (item.text_uthmani) {
+                        finalUnifiedHtml += `<span class="word-correct">${item.text_uthmani}</span> `;
+                    }
+                    if (item.ayah_marker) {
+                        finalUnifiedHtml += item.ayah_marker + " ";
                     }
                 }
+            } else if (op.tag === 'replace') {
+                const refLen = op.i2 - op.i1;
+                const recLen = op.j2 - op.j1;
+                const maxLen = Math.max(refLen, recLen);
+                mistakesCount += recLen;
+
+                for (let k = 0; k < maxLen; k++) {
+                    const item = k < refLen ? flatReferenceWords[op.i1 + k] : null;
+                    const recW = k < recLen ? recitedWords[op.j1 + k] : null;
+
+                    if (item && recW) {
+                        finalUnifiedHtml += `<span class="word-mistake" title="نطقت: (${recW})">${item.text_uthmani}</span> `;
+                        if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
+                    } else if (item && !recW) {
+                        finalUnifiedHtml += `<span class="word-missing" title="لم تُقرأ / منسية">${item.text_uthmani}</span> `;
+                        if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
+                    } else if (!item && recW) {
+                        finalUnifiedHtml += `<span class="word-extra" title="زيادة غير موجودة">+ (${recW})</span> `;
+                    }
+                }
+            } else if (op.tag === 'delete') {
+                // معالجة كل كلمة منسية مع رقم آيتها الخاص بها مباشرة
+                mistakesCount += (op.i2 - op.i1);
+                for (let idx = op.i1; idx < op.i2; idx++) {
+                    const item = flatReferenceWords[idx];
+                    if (item.text_uthmani) {
+                        finalUnifiedHtml += `<span class="word-missing" title="لم تُقرأ / منسية">${item.text_uthmani}</span> `;
+                    }
+                    if (item.ayah_marker) {
+                        finalUnifiedHtml += item.ayah_marker + " ";
+                    }
+                }
+            } else if (op.tag === 'insert') {
+                mistakesCount += (op.j2 - op.j1);
+                for (let idx = op.j1; idx < op.j2; idx++) {
+                    finalUnifiedHtml += `<span class="word-extra" title="زيادة غير موجودة">+ (${recitedWords[idx]})</span> `;
+                }
+            }
+        }
             } else if (op.tag === 'insert') {
                 // زيادات نطق بها القارئ غير موجودة بالمصحف -> أصفر
                 mistakesCount += (op.j2 - op.j1);
