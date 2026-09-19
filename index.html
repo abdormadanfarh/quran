@@ -121,7 +121,6 @@
             justify-content: space-between;
         }
 
-        /* لوحة عرض المصحف الموحدة */
         .quran-unified-display {
             direction: rtl;
             font-family: 'Amiri', 'Traditional Arabic', serif;
@@ -319,9 +318,10 @@ const statsBar = document.getElementById('statsBar');
 const correctBadge = document.getElementById('correctBadge');
 const mistakeBadge = document.getElementById('mistakeBadge');
 
-let mediaRecorder;
+let mediaRecorder = null;
 let audioChunks = [];
 let currentAudioBlob = null;
+let mediaStream = null;
 
 if (localStorage.getItem('gemini_api_key')) {
     apiKeyInput.value = localStorage.getItem('gemini_api_key');
@@ -377,55 +377,99 @@ updateAyahSelectors();
 
 btnRecord.onclick = async () => {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
+        if (!audioPlayer.paused) {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+        }
 
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        let mimeType = 'audio/webm';
+        if (!MediaRecorder.isTypeSupported('audio/webm')) {
+            if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
+            else if (MediaRecorder.isTypeSupported('audio/ogg')) mimeType = 'audio/ogg';
+            else mimeType = '';
+        }
+
+        mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+        audioChunks = [];
         currentAudioBlob = null;
+
         btnPlay.disabled = true;
         btnUpload.disabled = true;
 
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+                audioChunks.push(e.data);
+            }
+        };
+
         mediaRecorder.onstop = () => {
-            const mimeType = mediaRecorder.mimeType || 'audio/webm';
-            currentAudioBlob = new Blob(audioChunks, { type: mimeType });
-            
+            const actualType = mediaRecorder.mimeType || 'audio/webm';
+            currentAudioBlob = new Blob(audioChunks, { type: actualType });
+
             const sName = SURAHS.find(s => s.id === parseInt(surahSelect.value)).name;
             const recName = `${sName}_${fromAyah.value}_إلى_${toAyah.value}`;
             lastSavedName.textContent = `التسجيل المحفوظ: ${recName}`;
 
             btnPlay.disabled = false;
             btnUpload.disabled = false;
+            btnPlay.textContent = "▶️ استماع للتسجيل";
             statusTxt.textContent = "✅ تم حفظ التسجيل وهو جاهز للتفريغ.";
+
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
         };
 
-        mediaRecorder.start();
+        mediaRecorder.start(250);
         btnRecord.disabled = true;
         btnStop.disabled = false;
         statusTxt.textContent = "🔴 جاري التسجيل الآن...";
     } catch (err) {
         alert("يرجى إعطاء صلاحية المايكروفون للمتصفح: " + err.message);
+        btnRecord.disabled = false;
+        btnStop.disabled = true;
     }
 };
 
 btnStop.onclick = () => {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(t => t.stop());
         btnRecord.disabled = false;
         btnStop.disabled = true;
+        statusTxt.textContent = "⏳ جاري حفظ وتجهيز المقطع الصوتي...";
     }
 };
 
 btnPlay.onclick = () => {
-    if (currentAudioBlob) {
-        audioPlayer.src = URL.createObjectURL(currentAudioBlob);
-        audioPlayer.play();
-        statusTxt.textContent = "🔊 جاري تشغيل التسجيل الصوتي...";
+    if (!currentAudioBlob) return;
+
+    if (!audioPlayer.paused) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        btnPlay.textContent = "▶️ استماع للتسجيل";
+        statusTxt.textContent = "تم إيقاف التشغيل مؤقتاً.";
+        return;
     }
+
+    const audioUrl = URL.createObjectURL(currentAudioBlob);
+    audioPlayer.src = audioUrl;
+    audioPlayer.play().then(() => {
+        btnPlay.textContent = "⏸️ إيقاف مؤقت";
+        statusTxt.textContent = "🔊 جاري تشغيل التسجيل الصوتي...";
+    }).catch(err => {
+        console.error("Audio playback error:", err);
+        statusTxt.textContent = "تعذر تشغيل الصوت على هذا المتصفح.";
+    });
 };
 
-// خوارزميات المعالجة والتنظيف المطابقة تماماً للبايثون
+audioPlayer.onended = () => {
+    btnPlay.textContent = "▶️ استماع للتسجيل";
+    statusTxt.textContent = "انتهى تشغيل المقطع.";
+};
+
 function cleanArabic(text) {
     if (!text) return "";
     return text
@@ -546,7 +590,6 @@ btnUpload.onclick = async () => {
         const base64Audio = await blobToBase64(currentAudioBlob);
         const mimeType = currentAudioBlob.type.split(';')[0] || 'audio/webm';
 
-        // الـ Prompt المتطابق تماماً مع بايثون
         const promptInstruction = `
 أنت مدقق صوتي وناسخ صوتي خام (Phonetic Transcriber) فائق الحذر والتجرد.
 المهمة: تفريغ كل كلمة منطوقة في التسجيل الصوتي بدقة حرفية تامة.
@@ -578,36 +621,28 @@ btnUpload.onclick = async () => {
 
         const geminiData = await geminiRes.json();
 
-        // 1. فحص وجود خطأ صريح من السيرفر
         if (geminiData.error) {
             throw new Error(geminiData.error.message || JSON.stringify(geminiData.error));
         }
 
-        // 2. فحص هل تم حجب الرد بسبب الأمان أو الفلترة
         if (geminiData.promptFeedback && geminiData.promptFeedback.blockReason) {
             throw new Error(`تم إيقاف المعالجة من السيرفر بسبب: ${geminiData.promptFeedback.blockReason}`);
         }
 
-        // 3. فحص وجود المرشحات (candidates) بأمان تام لتفادي الخطأ
         if (!geminiData.candidates || geminiData.candidates.length === 0) {
             console.error("Gemini Full Response:", geminiData);
             throw new Error("لم يتم استخراج أي نص من التسجيل، تأكد من وضوح الصوت ومطابقة الآيات المحددة.");
         }
 
         const candidate = geminiData.candidates[0];
-        if (candidate.finishReason && candidate.finishReason !== "STOP") {
-            console.warn("Finish Reason:", candidate.finishReason);
-        }
-
-        // استخراج النص بأمان مع التعامل مع احتمالية عدم وجود parts
         const parts = candidate.content?.parts;
         if (!parts || parts.length === 0 || !parts[0].text) {
             throw new Error("وصل الرد فارغاً من النموذج، يرجى إعادة تسجيل الصوت بوضوح.");
         }
 
         const recitedRawText = parts[0].text.trim();
-        console.log("النص المفرغ بنجاح:", recitedRawText);
-        // تجهيز مصفوفة كلمات المصحف مع فواصل الآيات
+        console.log("النص المفرغ:", recitedRawText);
+
         const flatReferenceWords = [];
         for (let idx = 0; idx < refWords.length; idx++) {
             const item = refWords[idx];
@@ -648,42 +683,7 @@ btnUpload.onclick = async () => {
         let mistakesCount = 0;
         let finalUnifiedHtml = "";
 
-        // بناء العرض الموحد: النص الأصلي مع العلامات والتلوين
         for (const op of opcodes) {
-            if (op.tag === 'equal') {
-                for (let idx = op.i1; idx < op.i2; idx++) {
-                    correctCount++;
-                    const refW = flatReferenceWords[idx].text_uthmani;
-                    if (refW) {
-                        finalUnifiedHtml += `<span class="word-correct">${refW}</span> `;
-                    }
-                    if (flatReferenceWords[idx].ayah_marker) {
-                        finalUnifiedHtml += flatReferenceWords[idx].ayah_marker + " ";
-                    }
-                }
-            } else if (op.tag === 'replace') {
-                const refLen = op.i2 - op.i1;
-                const recLen = op.j2 - op.j1;
-                mistakesCount += recLen;
-
-                const recitedPart = recitedWords.slice(op.j1, op.j2).join(' ');
-                const quranPart = flatReferenceWords.slice(op.i1, op.i2).map(w => w.text_uthmani).filter(Boolean).join(' ');
-
-                finalUnifiedHtml += `<span class="word-mistake" title="نطقت: (${recitedPart})">${quranPart || '[خطأ لفظي]'}</span> `;
-
-                for (let k = op.i1; k < op.i2; k++) {
-                    if (flatReferenceWords[k].ayah_marker) {
-                        finalUnifiedHtml += flatReferenceWords[k].ayah_marker + " ";
-                    }
-                }
-            } else if (op.tag === 'delete') {
-                // كلمات سقطت أو نسيها القارئ -> أحمر
-                mistakesCount += (op.i2 - op.i1);
-                const missingQuran = flatReferenceWords.slice(op.i1, op.i2).map(w => w.text_uthmani).filter(Boolean).join(' ');
-
-                finalUnifiedHtml += `<span class="word-missing" title="لم تُقرأ / منسية">${missingQuran}</span> `;
-
-                for (const op of opcodes) {
             if (op.tag === 'equal') {
                 for (let idx = op.i1; idx < op.i2; idx++) {
                     correctCount++;
@@ -716,7 +716,6 @@ btnUpload.onclick = async () => {
                     }
                 }
             } else if (op.tag === 'delete') {
-                // معالجة كل كلمة منسية مع رقم آيتها الخاص بها مباشرة
                 mistakesCount += (op.i2 - op.i1);
                 for (let idx = op.i1; idx < op.i2; idx++) {
                     const item = flatReferenceWords[idx];
@@ -732,13 +731,6 @@ btnUpload.onclick = async () => {
                 for (let idx = op.j1; idx < op.j2; idx++) {
                     finalUnifiedHtml += `<span class="word-extra" title="زيادة غير موجودة">+ (${recitedWords[idx]})</span> `;
                 }
-            }
-        }
-            } else if (op.tag === 'insert') {
-                // زيادات نطق بها القارئ غير موجودة بالمصحف -> أصفر
-                mistakesCount += (op.j2 - op.j1);
-                const extraWords = recitedWords.slice(op.j1, op.j2).join(' ');
-                finalUnifiedHtml += `<span class="word-extra" title="زيادة غير موجودة في الآية">+ (${extraWords})</span> `;
             }
         }
 
