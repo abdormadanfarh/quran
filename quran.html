@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسميع القرآن الكريم التفاعلي</title>
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+            --success-bg: #dcfce7;
+            --text-main: #1e293b;
+            --border-col: #cbd5e1;
+            --bg-card: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Amiri", Tahoma, sans-serif;
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            margin: 0;
+            padding: 12px;
+            padding-bottom: 90px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            margin: 0 0 15px 0;
+            text-align: center;
+            color: var(--primary-dark);
+            font-size: 1.35rem;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        input[type="password"], select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-col);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background-color: #fafafa;
+        }
+
+        .selectors-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 640px) {
+            .selectors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .audio-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        @media (min-width: 641px) {
+            .audio-controls {
+                display: flex;
+                flex-wrap: wrap;
+            }
+        }
+
+        button, .file-label-btn {
+            padding: 12px 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            text-align: center;
+        }
+
+        @media (min-width: 641px) {
+            button, .file-label-btn {
+                width: auto;
+            }
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-record { background-color: var(--primary); color: white; }
+        .btn-stop { background-color: var(--danger); color: white; }
+        .btn-play { background-color: #2563eb; color: white; }
+        .btn-upload { background-color: #d97706; color: white; grid-column: span 2; }
+        .file-label-btn { background-color: #475569; color: white; margin: 0; }
+
+        @media (min-width: 641px) {
+            .btn-upload { grid-column: auto; }
+        }
+
+        .status-box {
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border-col);
+            font-size: 0.85rem;
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        @media (min-width: 641px) {
+            .status-box {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        /* سجل التسجيلات السابقة */
+        .history-section {
+            margin-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+
+        .history-list {
+            max-height: 140px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-col);
+            font-size: 0.85rem;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-mini {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .bottom-recording-bar {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(15, 23, 42, 0.95);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            font-size: 0.9rem;
+            width: 85%;
+            max-width: 320px;
+            justify-content: center;
+        }
+
+        .pulse-circle {
+            width: 10px;
+            height: 10px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: pulse-animation 1.2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.2); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .timer-badge {
+            font-variant-numeric: tabular-nums;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #f8fafc;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pane {
+            border: 1px solid var(--border-col);
+            border-radius: 8px;
+            padding: 14px;
+            background: #ffffff;
+            line-height: 2.3;
+            font-size: 1.1rem;
+            text-align: justify;
+            word-spacing: 2px;
+        }
+
+        .pane-header {
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-stat {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .badge-success { background: var(--success-bg); color: var(--primary-dark); }
+        .badge-danger { background: var(--danger-bg); color: var(--danger); }
+
+        .token-err {
+            background-color: var(--danger-bg);
+            color: var(--danger);
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 2px 4px;
+            text-decoration: line-through;
+        }
+
+        .token-correct-quran {
+            background-color: var(--success-bg);
+            color: #15803d;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 2px 4px;
+            border-bottom: 2px solid #16a34a;
+        }
+
+        .token-missing-quran {
+            background-color: var(--success-bg);
+            color: #15803d;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 2px 4px;
+            border: 1px dashed #16a34a;
+        }
+
+        .token-missing-recited {
+            background-color: #fef2f2;
+            color: var(--danger);
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 2px 5px;
+            border: 1px dashed #ef4444;
+            font-size: 0.85em;
+            margin: 0 3px;
+        }
+
+        .ayah-marker {
+            color: #ca8a04;
+            font-weight: bold;
+            margin: 0 4px;
+            font-size: 0.95em;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📖 المسمّع القرآني التفاعلي</h2>
+
+    <div class="input-group">
+        <label for="apiKey">Gemini API Key (يُحفظ محلياً بمتصفحك):</label>
+        <input type="password" id="apiKey" placeholder="AIzaSy...">
+    </div>
+
+    <div class="selectors-grid">
+        <div>
+            <label for="surahSelect">السورة:</label>
+            <select id="surahSelect"></select>
+        </div>
+        <div>
+            <label for="fromAyah">من آية:</label>
+            <select id="fromAyah"></select>
+        </div>
+        <div>
+            <label for="toAyah">إلى آية:</label>
+            <select id="toAyah"></select>
+        </div>
+    </div>
+
+    <div class="audio-controls">
+        <button id="btnRecord" class="btn-record">🎙️ تسجيل</button>
+        <button id="btnStop" class="btn-stop" disabled>⏹️ إيقاف</button>
+        <button id="btnPlay" class="btn-play" disabled>▶️ استماع</button>
+        
+        <label for="audioFileInput" class="file-label-btn">📁 رفع ملف صوتي</label>
+        <input type="file" id="audioFileInput" accept="audio/*" style="display: none;">
+
+        <button id="btnUpload" class="btn-upload" disabled>🚀 تفريغ وتقييم</button>
+    </div>
+
+    <div class="status-box">
+        <span id="statusTxt">جاهز للاستخدام.</span>
+        <span id="lastSavedName" style="color: #64748b;"></span>
+    </div>
+
+    <audio id="audioPlayer" style="display:none;"></audio>
+
+    <!-- سجل التسجيلات المحفوظة داخل المتصفح -->
+    <div class="history-section">
+        <label>🗄️ التسجيلات المحفوظة محلياً بالمتصفح (IndexedDB):</label>
+        <div id="historyList" class="history-list">
+            <span style="color:#94a3b8; font-size:0.8rem;">لا توجد تسجيلات محفوظة بعد.</span>
+        </div>
+    </div>
+
+    <div id="statsBar" style="display:none; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+        <span id="correctBadge" class="badge-stat badge-success">✓ صحيح: 0</span>
+        <span id="mistakeBadge" class="badge-stat badge-danger">✗ تنبيهات: 0</span>
+    </div>
+
+    <div id="resultArea" class="comparison-container" style="display:none;">
+        <div class="pane">
+            <div class="pane-header">
+                <span>🎙️</span>
+                <span>تلاوتك (المنطوق فعلياً)</span>
+            </div>
+            <div id="recitedContainer"></div>
+        </div>
+
+        <div class="pane">
+            <div class="pane-header">
+                <span>📑</span>
+                <span style="color: #15803d;">نص الآيات (المصحف الشريف)</span>
+            </div>
+            <div id="quranContainer"></div>
+        </div>
+    </div>
+</div>
+
+<div id="recordingFloatingBar" class="bottom-recording-bar">
+    <div class="pulse-circle"></div>
+    <span>جاري التسجيل...</span>
+    <span id="recordTimer" class="timer-badge">00:00</span>
+</div>
+
+<script>
+const SURAHS = [
+    {id: 1, name: "الفاتحة", count: 7}, {id: 2, name: "البقرة", count: 286}, {id: 3, name: "آل عمران", count: 200},
+    {id: 4, name: "النساء", count: 176}, {id: 5, name: "المائدة", count: 120}, {id: 6, name: "الأنعام", count: 165},
+    {id: 7, name: "الأعراف", count: 206}, {id: 8, name: "الأنفال", count: 75}, {id: 9, name: "التوبة", count: 129},
+    {id: 10, name: "يونس", count: 109}, {id: 11, name: "هود", count: 123}, {id: 12, name: "يوسف", count: 111},
+    {id: 13, name: "الرعد", count: 43}, {id: 14, name: "إبراهيم", count: 52}, {id: 15, name: "الحجر", count: 99},
+    {id: 16, name: "النحل", count: 128}, {id: 17, name: "الإسراء", count: 111}, {id: 18, name: "الكهف", count: 110},
+    {id: 19, name: "مريم", count: 98}, {id: 20, name: "طه", count: 135}, {id: 21, name: "الأنبياء", count: 112},
+    {id: 22, name: "الحج", count: 78}, {id: 23, name: "المؤمنون", count: 118}, {id: 24, name: "النور", count: 64},
+    {id: 25, name: "الفرقان", count: 77}, {id: 26, name: "الشعراء", count: 227}, {id: 27, name: "النمل", count: 93},
+    {id: 28, name: "القصص", count: 88}, {id: 29, name: "العنكبوت", count: 69}, {id: 30, name: "الروم", count: 60},
+    {id: 31, name: "لقمان", count: 34}, {id: 32, name: "السجدة", count: 30}, {id: 33, name: "الأحزاب", count: 73},
+    {id: 34, name: "سبأ", count: 54}, {id: 35, name: "فاطر", count: 45}, {id: 36, name: "يس", count: 83},
+    {id: 37, name: "الصافات", count: 182}, {id: 38, name: "ص", count: 88}, {id: 39, name: "الزمر", count: 75},
+    {id: 40, name: "غافر", count: 85}, {id: 41, name: "فصلت", count: 54}, {id: 42, name: "الشورى", count: 53},
+    {id: 43, name: "الزخرف", count: 89}, {id: 44, name: "الدخان", count: 59}, {id: 45, name: "الجاثية", count: 37},
+    {id: 46, name: "الأحقاف", count: 35}, {id: 47, name: "محمد", count: 38}, {id: 48, name: "الفتح", count: 29},
+    {id: 49, name: "الحجرات", count: 18}, {id: 50, name: "ق", count: 45}, {id: 51, name: "الذاريات", count: 60},
+    {id: 52, name: "الطور", count: 49}, {id: 53, name: "النجم", count: 62}, {id: 54, name: "القمر", count: 55},
+    {id: 55, name: "الرحمن", count: 78}, {id: 56, name: "الواقعة", count: 96}, {id: 57, name: "الحديد", count: 29},
+    {id: 58, name: "المجادلة", count: 22}, {id: 59, name: "الحشر", count: 24}, {id: 60, name: "الممتحنة", count: 13},
+    {id: 61, name: "الصف", count: 14}, {id: 62, name: "الجمعة", count: 11}, {id: 63, name: "المنافقون", count: 11},
+    {id: 64, name: "التغابن", count: 18}, {id: 65, name: "الطلاق", count: 12}, {id: 66, name: "التحريم", count: 12},
+    {id: 67, name: "الملك", count: 30}, {id: 68, name: "القلم", count: 52}, {id: 69, name: "الحاقة", count: 52},
+    {id: 70, name: "المعارج", count: 44}, {id: 71, name: "نوح", count: 28}, {id: 72, name: "الجن", count: 28},
+    {id: 73, name: "المزمل", count: 20}, {id: 74, name: "المدثر", count: 56}, {id: 75, name: "القيامة", count: 40},
+    {id: 76, name: "الإنسان", count: 31}, {id: 77, name: "المرسلات", count: 50}, {id: 78, name: "النبأ", count: 40},
+    {id: 79, name: "النازعات", count: 46}, {id: 80, name: "عبس", count: 42}, {id: 81, name: "التكوير", count: 29},
+    {id: 82, name: "الانفطار", count: 19}, {id: 83, name: "المطففين", count: 36}, {id: 84, name: "الانشقاق", count: 25},
+    {id: 85, name: "البروج", count: 22}, {id: 86, name: "الطارق", count: 17}, {id: 87, name: "الأعلى", count: 19},
+    {id: 88, name: "الغاشية", count: 26}, {id: 89, name: "الفجر", count: 30}, {id: 90, name: "البلد", count: 20},
+    {id: 91, name: "الشمس", count: 15}, {id: 92, name: "الليل", count: 21}, {id: 93, name: "الضحى", count: 11},
+    {id: 94, name: "الشرح", count: 8}, {id: 95, name: "التين", count: 8}, {id: 96, name: "العلق", count: 19},
+    {id: 97, name: "القدر", count: 5}, {id: 98, name: "البينة", count: 8}, {id: 99, name: "الزلزلة", count: 8},
+    {id: 100, name: "العاديات", count: 11}, {id: 101, name: "القارعة", count: 11}, {id: 102, name: "التكاثر", count: 8},
+    {id: 103, name: "العصر", count: 3}, {id: 104, name: "الهمزة", count: 9}, {id: 105, name: "الفيل", count: 5},
+    {id: 106, name: "قريش", count: 4}, {id: 107, name: "الماعون", count: 7}, {id: 108, name: "الكوثر", count: 3},
+    {id: 109, name: "الكافرون", count: 6}, {id: 110, name: "النصر", count: 3}, {id: 111, name: "المسد", count: 5},
+    {id: 112, name: "الإخلاص", count: 4}, {id: 113, name: "الفلق", count: 5}, {id: 114, name: "الناس", count: 6}
+];
+
+const surahSelect = document.getElementById('surahSelect');
+const fromAyah = document.getElementById('fromAyah');
+const toAyah = document.getElementById('toAyah');
+const apiKeyInput = document.getElementById('apiKey');
+const btnRecord = document.getElementById('btnRecord');
+const btnStop = document.getElementById('btnStop');
+const btnPlay = document.getElementById('btnPlay');
+const btnUpload = document.getElementById('btnUpload');
+const audioFileInput = document.getElementById('audioFileInput');
+const statusTxt = document.getElementById('statusTxt');
+const lastSavedName = document.getElementById('lastSavedName');
+const audioPlayer = document.getElementById('audioPlayer');
+const resultArea = document.getElementById('resultArea');
+const recitedContainer = document.getElementById('recitedContainer');
+const quranContainer = document.getElementById('quranContainer');
+const statsBar = document.getElementById('statsBar');
+const correctBadge = document.getElementById('correctBadge');
+const mistakeBadge = document.getElementById('mistakeBadge');
+const recordingFloatingBar = document.getElementById('recordingFloatingBar');
+const recordTimer = document.getElementById('recordTimer');
+const historyList = document.getElementById('historyList');
+
+let mediaRecorder;
+let audioChunks = [];
+let currentAudioBlob = null;
+let currentRecordingName = "";
+let timerInterval = null;
+let recordSeconds = 0;
+
+// === إدارة قاعدة بيانات IndexedDB لحفظ التسجيلات الصوتية ===
+let db;
+const request = indexedDB.open("QuranAudioDB", 1);
+request.onupgradeneeded = e => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains("recordings")) {
+        db.createObjectStore("recordings", { keyPath: "id", autoIncrement: true });
+    }
+};
+request.onsuccess = e => {
+    db = e.target.result;
+    renderHistory();
+};
+
+function saveAudioToDB(name, blob) {
+    if (!db) return;
+    const tx = db.transaction("recordings", "readwrite");
+    const store = tx.objectStore("recordings");
+    store.add({
+        name: name,
+        blob: blob,
+        date: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+    });
+    tx.oncomplete = () => renderHistory();
+}
+
+function renderHistory() {
+    if (!db) return;
+    const tx = db.transaction("recordings", "readonly");
+    const store = tx.objectStore("recordings");
+    const getAll = store.getAll();
+    getAll.onsuccess = () => {
+        const records = getAll.result;
+        historyList.innerHTML = "";
+        if (records.length === 0) {
+            historyList.innerHTML = '<span style="color:#94a3b8; font-size:0.8rem;">لا توجد تسجيلات محفوظة بعد.</span>';
+            return;
+        }
+        records.reverse().forEach(rec => {
+            const item = document.createElement("div");
+            item.className = "history-item";
+            item.innerHTML = `
+                <span>${rec.name} <small style="color:#94a3b8">(${rec.date})</small></span>
+                <div class="history-actions">
+                    <button class="btn-mini" style="background:#2563eb; color:white;" onclick="loadFromHistory(${rec.id})">استرجاع</button>
+                    <button class="btn-mini" style="background:#16a34a; color:white;" onclick="downloadFromHistory(${rec.id})">تحميل</button>
+                    <button class="btn-mini" style="background:#dc2626; color:white;" onclick="deleteFromHistory(${rec.id})">حذف</button>
+                </div>
+            `;
+            historyList.appendChild(item);
+        });
+    };
+}
+
+window.loadFromHistory = function(id) {
+    const tx = db.transaction("recordings", "readonly");
+    tx.objectStore("recordings").get(id).onsuccess = e => {
+        const rec = e.target.result;
+        currentAudioBlob = rec.blob;
+        currentRecordingName = rec.name;
+        lastSavedName.textContent = `التسجيل المختار: ${currentRecordingName}`;
+        btnPlay.disabled = false;
+        btnUpload.disabled = false;
+        statusTxt.textContent = `✅ تم استرجاع تسجبل "${rec.name}" بنجاح.`;
+    };
+};
+
+window.downloadFromHistory = function(id) {
+    const tx = db.transaction("recordings", "readonly");
+    tx.objectStore("recordings").get(id).onsuccess = e => {
+        const rec = e.target.result;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(rec.blob);
+        a.download = `${rec.name}.webm`;
+        a.click();
+    };
+};
+
+window.deleteFromHistory = function(id) {
+    const tx = db.transaction("recordings", "readwrite");
+    tx.objectStore("recordings").delete(id).onsuccess = () => renderHistory();
+};
+
+// استيراد ملف صوتي جاهز من الهاتف/اللاب
+audioFileInput.onchange = e => {
+    const file = e.target.files[0];
+    if (file) {
+        currentAudioBlob = file;
+        const sName = SURAHS.find(s => s.id === parseInt(surahSelect.value)).name;
+        currentRecordingName = `ملف_${file.name.replace(/\.[^/.]+$/, "")}_${sName}_${fromAyah.value}_إلى_${toAyah.value}`;
+        
+        lastSavedName.textContent = `الملف المرفوع: ${file.name}`;
+        btnPlay.disabled = false;
+        btnUpload.disabled = false;
+        statusTxt.textContent = "✅ تم استيراد الملف الصوتي وجاهز للتفريغ.";
+        
+        // حفظ الملف المستورد في السجل المحلي
+        saveAudioToDB(currentRecordingName, currentAudioBlob);
+    }
+};
+
+// حفظ واسترجاع مفتاح الـ API
+if (localStorage.getItem('gemini_api_key')) {
+    apiKeyInput.value = localStorage.getItem('gemini_api_key');
+}
+apiKeyInput.addEventListener('change', () => {
+    localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+});
+
+SURAHS.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = `${s.id}. سورة ${s.name} (${s.count} آية)`;
+    surahSelect.appendChild(opt);
+});
+
+function updateAyahSelectors() {
+    const sId = parseInt(surahSelect.value);
+    const surah = SURAHS.find(s => s.id === sId);
+    
+    fromAyah.innerHTML = "";
+    toAyah.innerHTML = "";
+
+    for (let i = 1; i <= surah.count; i++) {
+        const o1 = document.createElement('option');
+        o1.value = i;
+        o1.textContent = `آية ${i}`;
+        fromAyah.appendChild(o1);
+
+        const o2 = document.createElement('option');
+        o2.value = i;
+        o2.textContent = `آية ${i}`;
+        toAyah.appendChild(o2);
+    }
+    fromAyah.value = 1;
+    toAyah.value = surah.count;
+}
+
+surahSelect.addEventListener('change', updateAyahSelectors);
+
+fromAyah.addEventListener('change', () => {
+    if (parseInt(fromAyah.value) > parseInt(toAyah.value)) {
+        toAyah.value = fromAyah.value;
+    }
+});
+
+toAyah.addEventListener('change', () => {
+    if (parseInt(toAyah.value) < parseInt(fromAyah.value)) {
+        fromAyah.value = toAyah.value;
+    }
+});
+
+updateAyahSelectors();
+
+function startTimer() {
+    recordSeconds = 0;
+    recordTimer.textContent = "00:00";
+    recordingFloatingBar.style.display = "flex";
+    timerInterval = setInterval(() => {
+        recordSeconds++;
+        const mins = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+        const secs = String(recordSeconds % 60).padStart(2, '0');
+        recordTimer.textContent = `${mins}:${secs}`;
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    recordingFloatingBar.style.display = "none";
+}
+
+btnRecord.onclick = async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        btnPlay.textContent = "▶️ استماع";
+
+        currentAudioBlob = null;
+        btnPlay.disabled = true;
+        btnUpload.disabled = true;
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const mimeType = mediaRecorder.mimeType || 'audio/webm';
+            currentAudioBlob = new Blob(audioChunks, { type: mimeType });
+            
+            const sName = SURAHS.find(s => s.id === parseInt(surahSelect.value)).name;
+            currentRecordingName = `${sName}_${fromAyah.value}_إلى_${toAyah.value}`;
+            lastSavedName.textContent = `التسجيل: ${currentRecordingName}`;
+
+            btnPlay.disabled = false;
+            btnUpload.disabled = false;
+            statusTxt.textContent = "✅ تم حفظ التسجيل تلقائياً في السجل.";
+
+            // حفظ التسجيل مباشرة في IndexedDB
+            saveAudioToDB(currentRecordingName, currentAudioBlob);
+        };
+
+        mediaRecorder.start();
+        startTimer();
+
+        btnRecord.disabled = true;
+        btnStop.disabled = false;
+        statusTxt.textContent = "🔴 جاري التسجيل الآن...";
+    } catch (err) {
+        alert("يرجى إعطاء صلاحية المايكروفون: " + err.message);
+    }
+};
+
+btnStop.onclick = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        stopTimer();
+        btnRecord.disabled = false;
+        btnStop.disabled = true;
+    }
+};
+
+btnPlay.onclick = () => {
+    if (!currentAudioBlob) return;
+
+    if (!audioPlayer.src || audioPlayer.ended || audioPlayer.paused) {
+        audioPlayer.src = URL.createObjectURL(currentAudioBlob);
+        audioPlayer.play();
+        btnPlay.textContent = "⏸️ إيقاف مؤقت";
+        statusTxt.textContent = "🔊 جاري الاستماع للتسجيل...";
+    } else {
+        audioPlayer.pause();
+        btnPlay.textContent = "▶️ استئناف";
+        statusTxt.textContent = "⏸️ تم إيقاف الاستماع مؤقتاً.";
+    }
+};
+
+audioPlayer.onended = () => {
+    btnPlay.textContent = "▶️ استماع";
+    statusTxt.textContent = "✅ انتهى تشغيل التسجيل الصوتي.";
+};
+
+function cleanArabic(text) {
+    if (!text) return "";
+    return text
+        .replace(/[\u06D6-\u06ED\u0610-\u0615ۖۗۘۙۚۛۜ۞۩]/g, '')
+        .replace(/[\u0617-\u061A\u064B-\u0652\u0670]/g, '')
+        .replace(/[إأآاٱ]/g, 'ا')
+        .replace(/[يى]/g, 'ي')
+        .replace(/ة/g, 'ه')
+        .replace(/ؤ/g, 'و')
+        .replace(/ئ/g, 'ي')
+        .trim();
+}
+
+function toArabicNumber(n) {
+    const farsiDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return n.toString().replace(/\d/g, x => farsiDigits[x]);
+}
+
+function getDiffOpcodes(a, b) {
+    const N = a.length, M = b.length;
+    const dp = Array.from({length: N + 1}, () => new Uint16Array(M + 1));
+    for (let i = 0; i < N; i++) {
+        for (let j = 0; j < M; j++) {
+            if (a[i] === b[j]) dp[i+1][j+1] = dp[i][j] + 1;
+            else dp[i+1][j+1] = Math.max(dp[i+1][j], dp[i][j+1]);
+        }
+    }
+    const ops = [];
+    let i = N, j = M;
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && a[i-1] === b[j-1]) {
+            ops.push({tag: 'equal', i1: i-1, i2: i, j1: j-1, j2: j});
+            i--; j--;
+        } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+            ops.push({tag: 'insert', i1: i, i2: i, j1: j-1, j2: j});
+            j--;
+        } else {
+            ops.push({tag: 'delete', i1: i-1, i2: i, j1: j, j2: j});
+            i--;
+        }
+    }
+    ops.reverse();
+    const merged = [];
+    for (const op of ops) {
+        const last = merged[merged.length - 1];
+        if (last && last.tag === op.tag && last.i2 === op.i1 && last.j2 === op.j1) {
+            last.i2 = op.i2;
+            last.j2 = op.j2;
+        } else {
+            merged.push({...op});
+        }
+    }
+    const finalOps = [];
+    for (let k = 0; k < merged.length; k++) {
+        const curr = merged[k];
+        const next = merged[k+1];
+        if (next && ((curr.tag === 'delete' && next.tag === 'insert') || (curr.tag === 'insert' && next.tag === 'delete'))) {
+            finalOps.push({
+                tag: 'replace',
+                i1: Math.min(curr.i1, next.i1),
+                i2: Math.max(curr.i2, next.i2),
+                j1: Math.min(curr.j1, next.j1),
+                j2: Math.max(curr.j2, next.j2)
+            });
+            k++;
+        } else {
+            finalOps.push(curr);
+        }
+    }
+    return finalOps;
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+btnUpload.onclick = async () => {
+    const key = apiKeyInput.value.trim();
+    if (!key) {
+        alert("يرجى إدخال Gemini API Key أولاً!");
+        apiKeyInput.focus();
+        return;
+    }
+
+    const surahId = parseInt(surahSelect.value);
+    const startAyah = parseInt(fromAyah.value);
+    const endAyah = parseInt(toAyah.value);
+
+    statusTxt.textContent = "⏳ جاري جلب الآيات من المصحف...";
+    btnUpload.disabled = true;
+
+    try {
+        const refWords = [];
+        for (let a = startAyah; a <= endAyah; a++) {
+            const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surahId}:${a}?words=true&word_fields=text_imlaei,text_uthmani,position`);
+            const json = await res.json();
+            for (const w of json.verse.words) {
+                if (w.char_type_name === "word") {
+                    refWords.push({
+                        verse_key: `${surahId}:${a}`,
+                        position: w.position,
+                        text_uthmani: w.text_uthmani,
+                        text_imlaei: w.text_imlaei
+                    });
+                }
+            }
+        }
+
+        statusTxt.textContent = "🤖 جاري تفريغ وتحليل التلاوة...";
+
+        const base64Audio = await blobToBase64(currentAudioBlob);
+        const mimeType = currentAudioBlob.type.split(';')[0] || 'audio/webm';
+
+        const promptInstruction = `
+أنت مدقق صوتي وناسخ صوتي خام (Phonetic Transcriber) فائق الحذر والتجرد.
+المهمة: تفريغ كل كلمة منطوقة في التسجيل الصوتي بدقة حرفية تامة.
+
+تحذير وتوجيه صارم جداً:
+1. القارئ يقرأ القرآن الكريم لاختبار الحفظ، وقد يخطئ عمداً في بعض الكلمات (مثل تبديل الضمائر: نون الجماعة بهاء الغائب، أو إبدال كلمة بأخرى، أو نسيان جمل كاملة).
+2. إياك ثم إياك أن تصحح من حفظك للقرآن الكريم! إذا سمعته يقول "أمره" فاكتبها "أمره" ولا تبدلها بـ "أمرنا". إذا قال "آتيناه" بدون "مكنا له" فاكتب "آتيناه" فقط.
+3. انقل الكلمات التي سمعتها أذناك فقط بدون تشكيل وبدون علامات ترقيم أو فواصل.
+4. الإخراج: النص المنطوق الفعلي فقط بدون أي شرح أو زيادات.
+`;
+
+        const requestBody = {
+            contents: [{
+                parts: [
+                    { text: promptInstruction },
+                    { inline_data: { mime_type: mimeType, data: base64Audio } }
+                ]
+            }],
+            generationConfig: {
+                temperature: 0.0
+            }
+        };
+
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(requestBody)
+        });
+
+        const geminiData = await geminiRes.json();
+        if (geminiData.error) {
+            throw new Error(geminiData.error.message);
+        }
+
+        const recitedRawText = geminiData.candidates[0].content.parts[0].text.trim();
+
+        const flatReferenceWords = [];
+        for (let idx = 0; idx < refWords.length; idx++) {
+            const item = refWords[idx];
+            const rawImlaei = cleanArabic(item.text_imlaei || '');
+            if (!rawImlaei) continue;
+
+            const subWords = item.text_imlaei.split(/\s+/).filter(Boolean);
+            for (let sIdx = 0; sIdx < subWords.length; sIdx++) {
+                const sub = subWords[sIdx];
+                if (cleanArabic(sub)) {
+                    const displayUthmani = (sIdx === 0) ? item.text_uthmani : "";
+                    let isLastInVerse = false;
+                    if (sIdx === subWords.length - 1) {
+                        if (idx === refWords.length - 1 || refWords[idx+1].verse_key !== item.verse_key) {
+                            isLastInVerse = true;
+                        }
+                    }
+                    const ayahNum = item.verse_key.split(':')[1];
+                    const ayahMarker = isLastInVerse ? ` <span class="ayah-marker">﴿${toArabicNumber(ayahNum)}﴾</span>` : "";
+
+                    flatReferenceWords.push({
+                        verse_key: item.verse_key,
+                        text_uthmani: displayUthmani,
+                        text_imlaei_single: sub,
+                        ayah_marker: ayahMarker
+                    });
+                }
+            }
+        }
+
+        const recitedWords = recitedRawText.split(/\s+/).filter(Boolean);
+        const cleanRef = flatReferenceWords.map(w => cleanArabic(w.text_imlaei_single));
+        const cleanRec = recitedWords.map(w => cleanArabic(w));
+
+        const opcodes = getDiffOpcodes(cleanRef, cleanRec);
+
+        const recitedTokens = [];
+        const quranTokens = [];
+        let mistakesCount = 0;
+        let correctCount = 0;
+
+        for (const op of opcodes) {
+            if (op.tag === 'equal') {
+                for (let idx = op.i1; idx < op.i2; idx++) {
+                    correctCount++;
+                    recitedTokens.push(`<span>${recitedWords[op.j1 + (idx - op.i1)]}</span>`);
+                    
+                    const refW = flatReferenceWords[idx].text_uthmani;
+                    if (refW) quranTokens.push(`<span>${refW}</span>`);
+
+                    if (flatReferenceWords[idx].ayah_marker) {
+                        quranTokens.push(flatReferenceWords[idx].ayah_marker);
+                        recitedTokens.push(flatReferenceWords[idx].ayah_marker);
+                    }
+                }
+            } else if (op.tag === 'replace') {
+                mistakesCount += (op.j2 - op.j1);
+                const recSlice = recitedWords.slice(op.j1, op.j2).join(' ');
+                recitedTokens.push(`<span class="token-err" title="خطأ">${recSlice}</span>`);
+
+                const quranSlice = flatReferenceWords.slice(op.i1, op.i2).map(w => w.text_uthmani).filter(Boolean).join(' ');
+                quranTokens.push(`<span class="token-correct-quran" title="الصواب">${quranSlice}</span>`);
+
+                for (let k = op.i1; k < op.i2; k++) {
+                    if (flatReferenceWords[k].ayah_marker) {
+                        quranTokens.push(flatReferenceWords[k].ayah_marker);
+                        recitedTokens.push(flatReferenceWords[k].ayah_marker);
+                    }
+                }
+            } else if (op.tag === 'delete') {
+                mistakesCount += (op.i2 - op.i1);
+                const missingQuran = flatReferenceWords.slice(op.i1, op.i2).map(w => w.text_uthmani).filter(Boolean).join(' ');
+                quranTokens.push(`<span class="token-missing-quran" title="سقطت من التلاوة">${missingQuran}</span>`);
+
+                let missingMarkers = "";
+                for (let k = op.i1; k < op.i2; k++) {
+                    if (flatReferenceWords[k].ayah_marker) {
+                        quranTokens.push(flatReferenceWords[k].ayah_marker);
+                        missingMarkers += flatReferenceWords[k].ayah_marker;
+                    }
+                }
+                recitedTokens.push(`<span class="token-missing-recited">[سقط: ${missingQuran}]</span>${missingMarkers}`);
+            } else if (op.tag === 'insert') {
+                mistakesCount += (op.j2 - op.j1);
+                const extraSlice = recitedWords.slice(op.j1, op.j2).join(' ');
+                recitedTokens.push(`<span class="token-err">[زائد: ${extraSlice}]</span>`);
+            }
+        }
+
+        correctBadge.textContent = `✓ صحيح: ${correctCount}`;
+        mistakeBadge.textContent = `✗ تنبيهات: ${mistakesCount}`;
+        statsBar.style.display = "flex";
+
+        recitedContainer.innerHTML = recitedTokens.join(' ');
+        quranContainer.innerHTML = quranTokens.join(' ');
+        resultArea.style.display = "grid";
+
+        statusTxt.textContent = "✅ اكتمل التقييم ومقارنة التلاوة بنجاح.";
+    } catch (err) {
+        console.error(err);
+        statusTxt.textContent = `❌ حدث خطأ: ${err.message}`;
+    } finally {
+        btnUpload.disabled = false;
+    }
+};
+</script>
+</body>
+</html>
