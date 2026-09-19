@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المسمّع الذكي - الكشف التلقائي للآيات</title>
+    <title>المسمّع الذكي - الكشف التلقائي والاستيراد</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23059669%22/><text x=%2250%%22 y=%2255%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>✨</text></svg>">
     <style>
         :root {
@@ -37,6 +37,19 @@
             box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
         }
 
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         h2 {
             margin: 0 0 15px 0;
             text-align: center;
@@ -44,16 +57,8 @@
             font-size: 1.5rem;
         }
 
-        .input-group {
-            margin-bottom: 12px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
 
         input[type="password"], select {
             width: 100%;
@@ -73,9 +78,7 @@
         }
 
         @media (max-width: 650px) {
-            .config-grid {
-                grid-template-columns: 1fr;
-            }
+            .config-grid { grid-template-columns: 1fr; }
         }
 
         .audio-controls {
@@ -86,7 +89,7 @@
             align-items: center;
         }
 
-        button {
+        button, .btn-label {
             padding: 10px 16px;
             border: none;
             border-radius: 6px;
@@ -98,16 +101,17 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
+            text-decoration: none;
+            box-sizing: border-box;
         }
 
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-record { background-color: var(--primary); color: white; }
         .btn-stop { background-color: var(--danger); color: white; }
         .btn-play { background-color: #2563eb; color: white; }
+        .btn-save { background-color: #0284c7; color: white; }
+        .btn-import { background-color: #475569; color: white; }
         .btn-upload { background-color: #d97706; color: white; }
 
         .status-box {
@@ -191,7 +195,12 @@
 <body>
 
 <div class="container">
-    <h2>✨ المسمّع القرآني (الكشف التلقائي)</h2>
+    <div class="nav-links">
+        <a href="index.html">📖 التحديد اليدوي بالسورة والآيات ←</a>
+        <span style="color: #64748b;">الكشف التلقائي والاستيراد</span>
+    </div>
+
+    <h2>✨ المسمّع القرآني (كشف ذكي واستيراد)</h2>
 
     <div class="config-grid">
         <div>
@@ -209,21 +218,29 @@
     </div>
 
     <div class="audio-controls">
-        <button id="btnRecord" class="btn-record">🎙️ ابدأ التلاوة مباشرة</button>
-        <button id="btnStop" class="btn-stop" disabled>⏹️ إيقاف التسجيل</button>
+        <button id="btnRecord" class="btn-record">🎙️ بدء التلاوة</button>
+        <button id="btnStop" class="btn-stop" disabled>⏹️ إيقاف</button>
         <button id="btnPlay" class="btn-play" disabled>▶️ استماع</button>
-        <button id="btnUpload" class="btn-upload" disabled>🚀 اكتشف الآيات وقيّم التسميع</button>
+        <button id="btnSave" class="btn-save" disabled>💾 حفظ على الهاتف</button>
+
+        <!-- زر الاستيراد من الهاتف -->
+        <label for="fileImport" class="btn-label btn-import">
+            📂 استيراد صوت
+        </label>
+        <input type="file" id="fileImport" accept="audio/*" style="display:none;">
+
+        <button id="btnUpload" class="btn-upload" disabled>🚀 فحص وتقييم</button>
     </div>
 
     <div class="status-box">
-        <span id="statusTxt">اقرأ أي سورة أو آيات، وسيتعرف عليها النظام تلقائياً.</span>
+        <span id="statusTxt">سجّل تلاوتك مباشرة أو استورد ملفاً صوتياً من هاتفك.</span>
     </div>
 
     <div id="detectedBanner" class="detected-banner"></div>
     <audio id="audioPlayer" style="display:none;"></audio>
 
     <div id="statsBar" style="display:none; justify-content: space-between; align-items: center; margin-top: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
-        <strong style="font-size: 1rem;">التقييم والمطابقة:</strong>
+        <strong style="font-size: 1rem;">النتيجة والتقييم:</strong>
         <div style="display: flex; gap: 8px;">
             <span id="correctBadge" class="badge-stat badge-success">✓ صحيح: 0</span>
             <span id="mistakeBadge" class="badge-stat badge-danger">✗ تنبيهات: 0</span>
@@ -241,6 +258,8 @@ const modelSelect = document.getElementById('modelSelect');
 const btnRecord = document.getElementById('btnRecord');
 const btnStop = document.getElementById('btnStop');
 const btnPlay = document.getElementById('btnPlay');
+const btnSave = document.getElementById('btnSave');
+const fileImport = document.getElementById('fileImport');
 const btnUpload = document.getElementById('btnUpload');
 const statusTxt = document.getElementById('statusTxt');
 const detectedBanner = document.getElementById('detectedBanner');
@@ -255,12 +274,41 @@ let mediaRecorder = null;
 let audioChunks = [];
 let currentAudioBlob = null;
 let mediaStream = null;
+let currentFileName = "recitation.webm";
 
 if (localStorage.getItem('gemini_api_key')) {
     apiKeyInput.value = localStorage.getItem('gemini_api_key');
 }
 apiKeyInput.addEventListener('change', () => {
     localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+});
+
+// حفظ الصوت على الهاتف
+btnSave.onclick = () => {
+    if (!currentAudioBlob) return;
+    const url = URL.createObjectURL(currentAudioBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = currentFileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    statusTxt.textContent = `💾 تم حفظ الملف في مجلد التنزيلات باسم (${currentFileName})`;
+};
+
+// استيراد ملف صوتي من الهاتف
+fileImport.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    currentAudioBlob = file;
+    currentFileName = file.name;
+    btnPlay.disabled = false;
+    btnSave.disabled = false;
+    btnUpload.disabled = false;
+
+    statusTxt.textContent = `📁 تم استيراد الملف: ${file.name}، جاهز للفحص الآن.`;
 });
 
 btnRecord.onclick = async () => {
@@ -284,6 +332,7 @@ btnRecord.onclick = async () => {
         currentAudioBlob = null;
 
         btnPlay.disabled = true;
+        btnSave.disabled = true;
         btnUpload.disabled = true;
 
         mediaRecorder.ondataavailable = (e) => {
@@ -293,11 +342,15 @@ btnRecord.onclick = async () => {
         mediaRecorder.onstop = () => {
             const actualType = mediaRecorder.mimeType || 'audio/webm';
             currentAudioBlob = new Blob(audioChunks, { type: actualType });
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            currentFileName = `تلاوة_${timestamp}.${actualType.includes('mp4') ? 'm4a' : 'webm'}`;
 
             btnPlay.disabled = false;
+            btnSave.disabled = false;
             btnUpload.disabled = false;
             btnPlay.textContent = "▶️ استماع";
-            statusTxt.textContent = "✅ تم حفظ التلاوة، اضغط الزر لاكتشاف الآيات وتقييمها.";
+            statusTxt.textContent = "✅ تم التسجيل بنجاح. يمكنك حفظه أو فحصه مباشرة.";
 
             if (mediaStream) {
                 mediaStream.getTracks().forEach(t => t.stop());
@@ -308,7 +361,7 @@ btnRecord.onclick = async () => {
         mediaRecorder.start(250);
         btnRecord.disabled = true;
         btnStop.disabled = false;
-        statusTxt.textContent = "🔴 جاري التسجيل.. اتلُ ما تيسر من القرآن الآن.";
+        statusTxt.textContent = "🔴 جاري التسجيل.. اتلُ ما تيسر أو اطلب عرض آيات.";
     } catch (err) {
         alert("يرجى تفعيل صلاحية المايكروفون: " + err.message);
         btnRecord.disabled = false;
@@ -434,26 +487,30 @@ btnUpload.onclick = async () => {
     }
 
     const activeModel = modelSelect.value;
-    statusTxt.textContent = `🔍 جاري استماع التلاوة والتعرف على السورة والآيات تلقائياً...`;
+    statusTxt.textContent = `🔍 جاري تحليل الصوت وفهم النية والآيات...`;
     btnUpload.disabled = true;
 
     try {
         const base64Audio = await blobToBase64(currentAudioBlob);
         const mimeType = currentAudioBlob.type.split(';')[0] || 'audio/webm';
 
-        // برومبت ذكي يجبر النموذج على استخراج رقم السورة ورقم البداية والنهاية والتفريغ الحرفي كـ JSON
         const promptInstruction = `
-أنت خبير في التعرف على القرآن الكريم وناسخ صوتي حرفي.
+أنت خبير في فهم تلاوات القرآن الكريم والأوامر الصوتية.
 المهمة:
-1. استمع للتلاوة وحدد بالضبط: رقم السورة (surah_number من 1 إلى 114)، ورقم آية البداية (start_ayah)، ورقم آية النهاية (end_ayah).
-2. فرّغ الكلمات المنطوقة حرفياً دون أي تعديل من حفظك، وبدون تشكيل.
-3. الإخراج إجباري بصيغة JSON فقط بهذه الحقول:
+1. استمع للتسجيل الصوتي بدقة.
+2. حدد النية (intent):
+   - إذا كان المتحدث يطلب عرض آيات بصوته (مثل: "اعرض لي سورة الكهف من 1 إلى 5" أو "أريد قراءة سورة الإخلاص")، اجعل النية: "display_only".
+   - إذا كان يقرأ ويتلو قرآناً بنية التسميع والاختبار، اجعل النية: "recite".
+3. استخرج: رقم السورة (surah_number: 1 إلى 114)، واسم السورة (surah_name)، ورقم آية البداية (start_ayah)، ورقم آية النهاية (end_ayah).
+4. في حالة "recite": اكتب التفريغ الحرفي (transcription) كما نطقه اللسان تماماً وبدون أي تصحيح أو تشكيل.
+5. الإخراج بصيغة JSON فقط:
 {
+  "intent": "recite",
   "surah_number": 18,
   "start_ayah": 83,
   "end_ayah": 88,
   "surah_name": "الكهف",
-  "transcription": "نص التلاوة الحرفي بدون تصحيح أخطاء القارئ"
+  "transcription": "نص التلاوة الحرفي"
 }
 `;
 
@@ -485,14 +542,13 @@ btnUpload.onclick = async () => {
         const surahId = detectionResult.surah_number;
         const startAyah = detectionResult.start_ayah;
         const endAyah = detectionResult.end_ayah;
-        const recitedRawText = detectionResult.transcription.trim();
+        const intent = detectionResult.intent || "recite";
 
-        detectedBanner.style.display = "block";
-        detectedBanner.innerHTML = `🎯 تم التعرف تلقائياً على: <strong>سورة ${detectionResult.surah_name}</strong> (الآيات من ${startAyah} إلى ${endAyah})`;
+        // تحديث اسم الملف الذكي بعد التعرف
+        currentFileName = `${detectionResult.surah_name}_من_${startAyah}_إلى_${endAyah}.webm`;
 
-        statusTxt.textContent = "⏳ جاري جلب الآيات المطابقة ومقارنة التسميع...";
+        statusTxt.textContent = "⏳ جاري جلب نص الآيات المرجعية...";
 
-        // جلب الآيات بناء على ما اكتشفه الذكاء الاصطناعي
         const refWords = [];
         for (let a = startAyah; a <= endAyah; a++) {
             const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surahId}:${a}?words=true&word_fields=text_imlaei,text_uthmani,position`);
@@ -538,7 +594,28 @@ btnUpload.onclick = async () => {
             }
         }
 
-        const recitedWords = recitedRawText.split(/\s+/).filter(Boolean);
+        // إذا كان المستخدم طلب فقط عرض الآيات
+        if (intent === "display_only") {
+            detectedBanner.style.display = "block";
+            detectedBanner.innerHTML = `📖 تم عرض: <strong>سورة ${detectionResult.surah_name}</strong> (الآيات ${startAyah} - ${endAyah}) بناءً على طلبك الصوتي.`;
+            
+            let displayHtml = "";
+            for (const item of flatReferenceWords) {
+                if (item.text_uthmani) displayHtml += `<span class="word-correct">${item.text_uthmani}</span> `;
+                if (item.ayah_marker) displayHtml += item.ayah_marker + " ";
+            }
+            quranContent.innerHTML = displayHtml;
+            unifiedResultArea.style.display = "block";
+            statsBar.style.display = "none";
+            statusTxt.textContent = "✅ تم استعراض الآيات المطلوبة بنجاح.";
+            return;
+        }
+
+        // نمط التسميع والاختبار
+        detectedBanner.style.display = "block";
+        detectedBanner.innerHTML = `🎯 تم التعرف تلقائياً على: <strong>سورة ${detectionResult.surah_name}</strong> (الآيات من ${startAyah} إلى ${endAyah})`;
+
+        const recitedWords = (detectionResult.transcription || "").split(/\s+/).filter(Boolean);
         const cleanRef = flatReferenceWords.map(w => cleanArabic(w.text_imlaei_single));
         const cleanRec = recitedWords.map(w => cleanArabic(w));
 
