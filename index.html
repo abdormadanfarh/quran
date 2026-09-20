@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المسمّع القرآني الشامل</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23059669%22/><text x=%2250%%22 y=%2255%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>📖</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23059669%22/><text x=%2250%%22 y=%2255%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>✨</text></svg>">
     
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,17 +14,7 @@
 
     <style>
         body { font-family: 'Tajawal', sans-serif; }
-        .quran-font { 
-            font-family: 'Amiri', serif; 
-            line-height: 3.4 !important; /* مسافة أسطر واسعة ومريحة جداً للشاشات الكبيرة */
-            word-spacing: 6px;
-        }
-        @media (max-width: 640px) {
-            .quran-font {
-                line-height: 2.8 !important;
-                word-spacing: 3px;
-            }
-        }
+        .quran-font { font-family: 'Amiri', serif; }
         input[type="range"]::-webkit-slider-thumb {
             appearance: none;
             width: 14px;
@@ -37,26 +27,30 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen pb-36">
 
-    <!-- 1. شريط التنقل العلوي -->
+    <!-- شريط التنقل العلوي -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm mb-4">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-2xl">📖</span>
                 <div>
-                    <h1 class="text-base font-bold text-emerald-800 leading-tight">المسمّع القرآني الذكي</h1>
+                    <h1 class="text-base font-bold text-emerald-800 leading-tight">المسمّع القرآني</h1>
                     <span id="headerSub" class="text-xs text-slate-500 font-medium">الوضع: كشف تلقائي</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <!-- مبدل الأنماط -->
+                <!-- أزرار التبديل بين الأوضاع -->
                 <div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200 text-xs">
-                    <button id="tabAuto" class="px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white shadow-sm transition">✨ كشف ذكي</button>
-                    <button id="tabManual" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:text-slate-900 transition">📝 يدوي</button>
+                    <button id="tabAuto" class="px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white shadow-sm transition">
+                        ⚡ تلقائي
+                    </button>
+                    <button id="tabManual" class="px-3 py-1.5 rounded-lg font-bold text-slate-600 hover:text-slate-900 transition">
+                        📝 يدوي
+                    </button>
                 </div>
 
-                <!-- زر الإعدادات والـ API -->
-                <button id="btnOpenSettings" class="p-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-full transition" title="إدارة المفاتيح والموديلات">
+                <!-- زر الترس للإعدادات -->
+                <button id="btnOpenSettings" class="p-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-full transition" title="الإعدادات">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -66,7 +60,7 @@
         </div>
 
         <!-- مشغل الصوت المدمج -->
-        <div id="playerBar" class="max-w-4xl mx-auto px-4 py-2 bg-slate-100/90 border-t border-slate-200 hidden transition-all">
+        <div id="playerBar" class="max-w-3xl mx-auto px-4 py-2 bg-slate-100/90 border-t border-slate-200 hidden transition-all">
             <div class="flex items-center gap-3">
                 <button id="btnPlayerPlay" class="w-9 h-9 flex items-center justify-center rounded-full bg-emerald-600 text-white shadow hover:bg-emerald-700 transition flex-shrink-0">
                     <span id="playerPlayIcon">▶</span>
@@ -88,63 +82,63 @@
         </div>
     </header>
 
-    <!-- 2. المحتوى الرئيسي -->
-    <main class="max-w-4xl mx-auto px-4 space-y-4">
+    <!-- المحتوى الرئيسي -->
+    <main class="max-w-3xl mx-auto px-4 space-y-4">
         
-        <!-- حقول التحديد اليدوي -->
-        <div id="manualPickerCard" class="hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-sm transition">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- بطاقة الاختيار اليدوي (مخفية في الوضع التلقائي) -->
+        <div id="manualPickerCard" class="hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+            <h3 class="font-bold text-slate-700 text-sm">حدد موضع التلاوة للتسميع:</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">السورة الكريمة:</label>
-                    <select id="surahSelect" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"></select>
+                    <label class="block text-slate-500 text-xs mb-1">السورة:</label>
+                    <select id="surahSelect" class="w-full p-2 border border-slate-300 rounded-xl bg-slate-50 outline-none"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">من الآية:</label>
-                    <input type="number" id="fromAyah" min="1" value="1" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <label class="block text-slate-500 text-xs mb-1">من آية:</label>
+                    <input type="number" id="fromAyah" min="1" value="1" class="w-full p-2 border border-slate-300 rounded-xl bg-slate-50 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">إلى الآية:</label>
-                    <input type="number" id="toAyah" min="1" value="5" class="w-full p-2.5 border border-slate-300 rounded-xl text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <label class="block text-slate-500 text-xs mb-1">إلى آية:</label>
+                    <input type="number" id="toAyah" min="1" value="5" class="w-full p-2 border border-slate-300 rounded-xl bg-slate-50 outline-none">
                 </div>
             </div>
         </div>
 
-        <!-- لافتة التنبيهات والحالة -->
+        <!-- شريط الحالة والإشعارات -->
         <div id="statusBox" class="bg-white border border-slate-200 text-slate-600 text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-between">
             <span id="statusTxt" class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                جاهز. اتلُ تلاوتك أو استورد تسجيلاً للتحليل.
+                جاهز للتسجيل.
             </span>
-            <span id="activeKeyIndicator" class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md font-mono"></span>
         </div>
 
-        <div id="detectedBanner" class="hidden bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl font-medium text-sm flex items-center gap-2 shadow-sm"></div>
+        <!-- لافتة السورة المكتشفة -->
+        <div id="detectedBanner" class="hidden bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-xl font-medium text-sm shadow-sm"></div>
 
-        <!-- شريط الإحصائيات -->
+        <!-- إحصائيات التقييم -->
         <div id="statsBar" class="hidden justify-between items-center bg-white px-4 py-2.5 rounded-xl border border-slate-200 text-sm shadow-sm">
-            <span class="font-bold text-slate-700">النتيجة والتقييم:</span>
+            <span class="font-bold text-slate-700">النتيجة والمطابقة:</span>
             <div class="flex gap-2">
                 <span id="correctBadge" class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-bold">✓ صحيح: 0</span>
                 <span id="mistakeBadge" class="bg-red-100 text-red-800 text-xs px-2.5 py-1 rounded-full font-bold">✗ تنبيهات: 0</span>
             </div>
         </div>
 
-        <!-- مساحة عرض المصحف -->
-        <div id="unifiedResultArea" class="hidden bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-sm">
-            <div id="quranContent" class="quran-font text-2xl sm:text-3xl text-justify text-slate-800 selection:bg-emerald-100"></div>
+        <!-- مساحة عرض المصحف الشريف -->
+        <div id="unifiedResultArea" class="hidden bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+            <div id="quranContent" class="quran-font text-2xl sm:text-3xl leading-[2.6] text-justify text-slate-800"></div>
         </div>
     </main>
 
-    <!-- 3. كبسولة التحكم العائمة (Floating Dock) -->
+    <!-- شريط التحكم العائم (Floating Dock) -->
     <div id="dockContainer" class="fixed bottom-4 left-0 right-0 z-30 flex flex-col items-center gap-2 px-4 transition-all duration-300">
         
-        <button id="btnToggleDock" class="bg-white/80 backdrop-blur-md border border-slate-200 text-slate-600 text-xs px-3 py-1 rounded-full shadow-sm hover:bg-white flex items-center gap-1">
+        <button id="btnToggleDock" class="bg-white/90 backdrop-blur-md border border-slate-200 text-slate-600 text-xs px-3 py-1 rounded-full shadow-sm hover:bg-white flex items-center gap-1">
             <span id="toggleIcon">▼</span>
-            <span id="toggleText">إخفاء الأزرار للقراءة</span>
+            <span id="toggleText">إخفاء الأزرار</span>
         </button>
 
         <div id="dockButtons" class="bg-slate-900/90 backdrop-blur-lg border border-slate-700/50 p-2 rounded-2xl shadow-2xl flex flex-wrap items-center justify-center gap-2 max-w-lg w-full transition-all">
-            
             <button id="btnRecord" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow transition">
                 <span class="text-base">🎙️</span> تسجيل
             </button>
@@ -156,9 +150,9 @@
             <label id="lblImport" for="fileImport" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium px-3.5 py-2.5 rounded-xl cursor-pointer flex items-center gap-1 transition">
                 <span>📂</span> استيراد
             </label>
-            <input type="file" id="fileImport" accept="audio/*,video/webm,audio/webm,.webm,.m4a,.mp3,.wav" class="hidden">
+            <input type="file" id="fileImport" accept="audio/*" class="hidden">
 
-            <button id="btnSave" disabled class="bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 font-medium text-sm px-3.5 py-2.5 rounded-xl transition" title="حفظ التسجيل على الهاتف">
+            <button id="btnSave" disabled class="bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 font-medium text-sm px-3.5 py-2.5 rounded-xl transition" title="حفظ الملف">
                 💾 حفظ
             </button>
 
@@ -168,47 +162,32 @@
         </div>
     </div>
 
-    <!-- 4. نافذة الإعدادات وإدارة المفاتيح والموديلات -->
+    <!-- نافذة الإعدادات (Settings Modal) -->
     <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-100">
             <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">⚙️ إدارة المفاتيح والموديلات</h3>
+                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">⚙️ إعدادات الذكاء الاصطناعي</h3>
                 <button id="btnCloseSettings" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <!-- قسم إدارة المفاتيح -->
-            <div class="space-y-3">
-                <label class="block font-bold text-slate-700 text-xs">مفتاح API النشط حالياً:</label>
-                <div class="flex gap-2">
-                    <select id="activeKeySelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-slate-50 outline-none"></select>
-                    <button id="btnDeleteKey" class="p-2 text-red-600 hover:bg-red-50 rounded-lg border border-red-200" title="حذف المفتاح المختار">🗑️</button>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">Gemini API Key:</label>
+                    <input type="password" id="apiKey" placeholder="AIzaSy..." class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
                 </div>
 
-                <!-- إضافة مفتاح جديد -->
-                <div class="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl space-y-2">
-                    <span class="text-xs font-bold text-slate-600">إضافة مفتاح إضافي (+):</span>
-                    <div class="flex gap-2">
-                        <input type="text" id="newKeyName" placeholder="اسم رمزي (مثلاً: حساب 2)" class="w-1/3 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none">
-                        <input type="password" id="newKeyValue" placeholder="AIzaSy..." class="w-2/3 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none">
-                    </div>
-                    <button id="btnAddKey" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-1.5 rounded-lg transition">+ فحص وحفظ المفتاح</button>
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">الموديل المستخدم:</label>
+                    <select id="modelSelect" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 outline-none">
+                        <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+                        <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- قسم اختيار الموديل الديناميكي -->
-            <div class="space-y-2 text-sm pt-2 border-t">
-                <div class="flex justify-between items-center">
-                    <label class="block font-bold text-slate-700 text-xs">الموديل المستخدم:</label>
-                    <button id="btnRefreshModels" class="text-[11px] text-emerald-700 hover:underline">🔄 تحديث الموديلات</button>
-                </div>
-                <select id="modelSelect" class="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-slate-50 outline-none font-medium">
-                    <option value="">جاري فحص الموديلات المتاحة...</option>
-                </select>
-                <p id="modelStatusHint" class="text-[11px] text-slate-500">سيتم تفعيل التبديل التلقائي (Fallback) إذا واجه الموديل أي ضغط.</p>
-            </div>
-
-            <div class="pt-3 flex justify-end">
-                <button id="btnSaveSettings" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-medium">إغلاق وحفظ</button>
+            <div class="pt-2 flex justify-end">
+                <button id="btnSaveSettings" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-medium">حفظ</button>
             </div>
         </div>
     </div>
@@ -216,75 +195,74 @@
     <audio id="audioPlayer"></audio>
 
 <script>
-// قائمة السور الكريمة
-const SURAHS = [
-    {id: 1, name: "الفاتحة", verses: 7}, {id: 2, name: "البقرة", verses: 286}, {id: 3, name: "آل عمران", verses: 200},
-    {id: 4, name: "النساء", verses: 176}, {id: 5, name: "المائدة", verses: 120}, {id: 6, name: "الأنعام", verses: 165},
-    {id: 7, name: "الأعراف", verses: 206}, {id: 8, name: "الأنفال", verses: 75}, {id: 9, name: "التوبة", verses: 129},
-    {id: 10, name: "يونس", verses: 109}, {id: 11, name: "هود", verses: 123}, {id: 12, name: "يوسف", verses: 111},
-    {id: 13, name: "الرعد", verses: 43}, {id: 14, name: "إبراهيم", verses: 52}, {id: 15, name: "الحجر", verses: 99},
-    {id: 16, name: "النحل", verses: 128}, {id: 17, name: "الإسراء", verses: 111}, {id: 18, name: "الكهف", verses: 110},
-    {id: 19, name: "مريم", verses: 98}, {id: 20, name: "طه", verses: 135}, {id: 21, name: "الأنبياء", verses: 112},
-    {id: 22, name: "الحج", verses: 78}, {id: 23, name: "المؤمنون", verses: 118}, {id: 24, name: "النور", verses: 64},
-    {id: 25, name: "الفرقان", verses: 77}, {id: 26, name: "الشعراء", verses: 227}, {id: 27, name: "النمل", verses: 93},
-    {id: 28, name: "القصص", verses: 88}, {id: 29, name: "العنكبوت", verses: 69}, {id: 30, name: "الروم", verses: 60},
-    {id: 31, name: "لقمان", verses: 34}, {id: 32, name: "السجدة", verses: 30}, {id: 33, name: "الأحزاب", verses: 73},
-    {id: 34, name: "سبأ", verses: 54}, {id: 35, name: "فاطر", verses: 45}, {id: 36, name: "يس", verses: 83},
-    {id: 37, name: "الصافات", verses: 182}, {id: 38, name: "ص", verses: 88}, {id: 39, name: "الزمر", verses: 75},
-    {id: 40, name: "غافر", verses: 85}, {id: 41, name: "فصلت", verses: 54}, {id: 42, name: "الشورى", verses: 53},
-    {id: 43, name: "الزخرف", verses: 89}, {id: 44, name: "الدخان", verses: 59}, {id: 45, name: "الجاثية", verses: 37},
-    {id: 46, name: "الأحقاف", verses: 35}, {id: 47, name: "محمد", verses: 38}, {id: 48, name: "الفتح", verses: 29},
-    {id: 49, name: "الحجرات", verses: 18}, {id: 50, name: "ق", verses: 45}, {id: 51, name: "الذاريات", verses: 60},
-    {id: 52, name: "الطور", verses: 49}, {id: 53, name: "النجم", verses: 62}, {id: 54, name: "القمر", verses: 55},
-    {id: 55, name: "الرحمن", verses: 78}, {id: 56, name: "الواقعة", verses: 96}, {id: 57, name: "الحديد", verses: 29},
-    {id: 58, name: "المجادلة", verses: 22}, {id: 59, name: "الحشر", verses: 24}, {id: 60, name: "الممتحنة", verses: 13},
-    {id: 61, name: "الصف", verses: 14}, {id: 62, name: "الجمعة", verses: 11}, {id: 63, name: "المنافقون", verses: 11},
-    {id: 64, name: "التغابن", verses: 18}, {id: 65, name: "الطلاق", verses: 12}, {id: 66, name: "التحريم", verses: 12},
-    {id: 67, name: "الملك", verses: 30}, {id: 68, name: "القلم", verses: 52}, {id: 69, name: "الحاقة", verses: 52},
-    {id: 70, name: "المعارج", verses: 44}, {id: 71, name: "نوح", verses: 28}, {id: 72, name: "الجن", verses: 28},
-    {id: 73, name: "المزمل", verses: 20}, {id: 74, name: "المدثر", verses: 56}, {id: 75, name: "القيامة", verses: 40},
-    {id: 76, name: "الإنسان", verses: 31}, {id: 77, name: "المرسلات", verses: 50}, {id: 78, name: "النبأ", verses: 40},
-    {id: 79, name: "النازعات", verses: 46}, {id: 80, name: "عبس", verses: 42}, {id: 81, name: "التكوير", verses: 29},
-    {id: 82, name: "الانفطار", verses: 19}, {id: 83, name: "المطففين", verses: 36}, {id: 84, name: "الانشقاق", verses: 25},
-    {id: 85, name: "البروج", verses: 22}, {id: 86, name: "الطارق", verses: 17}, {id: 87, name: "الأعلى", verses: 19},
-    {id: 88, name: "الغاشية", verses: 26}, {id: 89, name: "الفجر", verses: 30}, {id: 90, name: "البلد", verses: 20},
-    {id: 91, name: "الشمس", verses: 15}, {id: 92, name: "الليل", verses: 21}, {id: 93, name: "الضحى", verses: 11},
-    {id: 94, name: "الشرح", verses: 8}, {id: 95, name: "التين", verses: 8}, {id: 96, name: "العلق", verses: 19},
-    {id: 97, name: "القدر", verses: 5}, {id: 98, name: "البينة", verses: 8}, {id: 99, name: "الزلزلة", verses: 8},
-    {id: 100, name: "العاديات", verses: 11}, {id: 101, name: "القارعة", verses: 11}, {id: 102, name: "التكاثر", verses: 8},
-    {id: 103, name: "العصر", verses: 3}, {id: 104, name: "الهمزة", verses: 9}, {id: 105, name: "الفيل", verses: 5},
-    {id: 106, name: "قريش", verses: 4}, {id: 107, name: "الماعون", verses: 7}, {id: 108, name: "الكوثر", verses: 3},
-    {id: 109, name: "الكافرون", verses: 6}, {id: 110, name: "النصر", verses: 3}, {id: 111, name: "المسد", verses: 5},
-    {id: 112, name: "الإخلاص", verses: 4}, {id: 113, name: "الفلق", verses: 5}, {id: 114, name: "الناس", verses: 6}
-];
-
 let currentMode = 'auto';
+let mediaRecorder = null;
+let audioChunks = [];
+let currentAudioBlob = null;
+let mediaStream = null;
+let currentFileName = "recitation.webm";
+
+// العناصر
 const tabAuto = document.getElementById('tabAuto');
 const tabManual = document.getElementById('tabManual');
-const headerSub = document.getElementById('headerSub');
 const manualPickerCard = document.getElementById('manualPickerCard');
-const lblImport = document.getElementById('lblImport');
+const headerSub = document.getElementById('headerSub');
 const surahSelect = document.getElementById('surahSelect');
 const fromAyah = document.getElementById('fromAyah');
 const toAyah = document.getElementById('toAyah');
+const lblImport = document.getElementById('lblImport');
 
-SURAHS.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = `${s.id}. سورة ${s.name} (${s.verses} آية)`;
-    surahSelect.appendChild(opt);
-});
+const apiKeyInput = document.getElementById('apiKey');
+const modelSelect = document.getElementById('modelSelect');
+const settingsModal = document.getElementById('settingsModal');
+const btnOpenSettings = document.getElementById('btnOpenSettings');
+const btnCloseSettings = document.getElementById('btnCloseSettings');
+const btnSaveSettings = document.getElementById('btnSaveSettings');
 
-function updateAyahBounds() {
-    const s = SURAHS.find(x => x.id === parseInt(surahSelect.value));
-    fromAyah.max = s.verses;
-    toAyah.max = s.verses;
-    if (parseInt(fromAyah.value) > s.verses) fromAyah.value = 1;
-    if (parseInt(toAyah.value) > s.verses) toAyah.value = Math.min(5, s.verses);
-}
-surahSelect.addEventListener('change', updateAyahBounds);
-updateAyahBounds();
+const btnRecord = document.getElementById('btnRecord');
+const btnStop = document.getElementById('btnStop');
+const btnSave = document.getElementById('btnSave');
+const fileImport = document.getElementById('fileImport');
+const btnUpload = document.getElementById('btnUpload');
 
+const playerBar = document.getElementById('playerBar');
+const audioPlayer = document.getElementById('audioPlayer');
+const btnPlayerPlay = document.getElementById('btnPlayerPlay');
+const playerPlayIcon = document.getElementById('playerPlayIcon');
+const audioSeeker = document.getElementById('audioSeeker');
+const currentTimeTxt = document.getElementById('currentTimeTxt');
+const durationTxt = document.getElementById('durationTxt');
+const btnRewind = document.getElementById('btnRewind');
+const btnForward = document.getElementById('btnForward');
+const rewindLbl = document.getElementById('rewindLbl');
+const forwardLbl = document.getElementById('forwardLbl');
+
+const btnToggleDock = document.getElementById('btnToggleDock');
+const dockButtons = document.getElementById('dockButtons');
+const toggleIcon = document.getElementById('toggleIcon');
+const toggleText = document.getElementById('toggleText');
+
+const statusTxt = document.getElementById('statusTxt');
+const detectedBanner = document.getElementById('detectedBanner');
+const unifiedResultArea = document.getElementById('unifiedResultArea');
+const quranContent = document.getElementById('quranContent');
+const statsBar = document.getElementById('statsBar');
+const correctBadge = document.getElementById('correctBadge');
+const mistakeBadge = document.getElementById('mistakeBadge');
+
+// استرجاع الإعدادات
+if (localStorage.getItem('gemini_api_key')) apiKeyInput.value = localStorage.getItem('gemini_api_key');
+if (localStorage.getItem('gemini_model')) modelSelect.value = localStorage.getItem('gemini_model');
+
+btnOpenSettings.onclick = () => settingsModal.classList.remove('hidden');
+btnCloseSettings.onclick = () => settingsModal.classList.add('hidden');
+btnSaveSettings.onclick = () => {
+    localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+    localStorage.setItem('gemini_model', modelSelect.value);
+    settingsModal.classList.add('hidden');
+};
+
+// التبديل بين التلقائي واليدوي
 tabAuto.onclick = () => {
     currentMode = 'auto';
     tabAuto.className = "px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white shadow-sm transition";
@@ -303,212 +281,35 @@ tabManual.onclick = () => {
     lblImport.classList.add('hidden');
 };
 
-// ----------------------------------------------------
-// إدارة المفاتيح والموديلات الديناميكية
-// ----------------------------------------------------
-let apiKeys = JSON.parse(localStorage.getItem('gemini_api_keys') || '[]');
-if (apiKeys.length === 0 && localStorage.getItem('gemini_api_key')) {
-    apiKeys.push({ name: 'مفتاحي الرئيسي', key: localStorage.getItem('gemini_api_key') });
-    localStorage.setItem('gemini_api_keys', JSON.stringify(apiKeys));
-}
-
-let activeKeyIndex = parseInt(localStorage.getItem('gemini_active_key_index') || '0');
-if (activeKeyIndex >= apiKeys.length) activeKeyIndex = 0;
-
-const activeKeySelect = document.getElementById('activeKeySelect');
-const activeKeyIndicator = document.getElementById('activeKeyIndicator');
-const btnDeleteKey = document.getElementById('btnDeleteKey');
-const btnAddKey = document.getElementById('btnAddKey');
-const newKeyName = document.getElementById('newKeyName');
-const newKeyValue = document.getElementById('newKeyValue');
-const modelSelect = document.getElementById('modelSelect');
-const btnRefreshModels = document.getElementById('btnRefreshModels');
-const modelStatusHint = document.getElementById('modelStatusHint');
-
-let dynamicAudioModels = [];
-
-function updateModelSelectUI(models) {
-    modelSelect.innerHTML = '';
-    if (!models || models.length === 0) {
-        modelSelect.innerHTML = '<option value="">لا توجد موديلات متاحة</option>';
-        return;
-    }
-
-    const savedModel = localStorage.getItem('gemini_model');
-    models.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m + (m.includes('flash') ? ' (سريع وموصى به)' : '');
-        if (m === savedModel) opt.selected = true;
-        modelSelect.appendChild(opt);
-    });
-
-    if (!modelSelect.value && models.length > 0) {
-        modelSelect.value = models[0];
-        localStorage.setItem('gemini_model', models[0]);
-    }
-}
-
-async function fetchValidAudioModels(apiKey) {
-    if (!apiKey) return [];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-
+// ملء قائمة السور للوضع اليدوي
+async function loadSurahs() {
     try {
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) throw new Error(`كود: ${response.status}`);
-
-        const data = await response.json();
-        const rawModels = data.models || [];
-
-        const filtered = rawModels
-            .filter(m => {
-                const name = m.name.toLowerCase();
-                const methods = m.supportedGenerationMethods || [];
-                const supportsGenerate = methods.includes("generateContent");
-                const isGeminiFamily = name.includes("gemini");
-                const isExcluded = name.includes("image") || 
-                                   name.includes("tts") || 
-                                   name.includes("robotics") || 
-                                   name.includes("computer-use");
-                return supportsGenerate && isGeminiFamily && !isExcluded;
-            })
-            .map(m => m.name.replace("models/", ""));
-
-        // ترتيب الموديلات السريعة Flash أولاً
-        filtered.sort((a, b) => {
-            const aFlash = a.includes("flash") ? 1 : 0;
-            const bFlash = b.includes("flash") ? 1 : 0;
-            return bFlash - aFlash;
-        });
-
-        dynamicAudioModels = filtered.length > 0 ? filtered : ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
-        updateModelSelectUI(dynamicAudioModels);
-        modelStatusHint.textContent = `✅ تم تفعيل ${dynamicAudioModels.length} موديل متوافق مع الصوتيات.`;
-        return dynamicAudioModels;
-
-    } catch (err) {
-        clearTimeout(timeoutId);
-        console.warn("فشل كشف الموديلات، الاعتماد على القائمة الافتراضية:", err);
-        dynamicAudioModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
-        updateModelSelectUI(dynamicAudioModels);
-        modelStatusHint.textContent = "⚠️ استخدمنا قائمة الموديلات الافتراضية.";
-        return dynamicAudioModels;
+        const res = await fetch('https://api.quran.com/api/v4/chapters?language=ar');
+        const data = await res.json();
+        surahSelect.innerHTML = data.chapters.map(c => `<option value="${c.id}" data-verses="${c.verses_count}">${c.id}. سورة ${c.name_arabic}</option>`).join('');
+        updateAyahBounds();
+    } catch (e) {
+        console.warn("تعذر تحميل السور مسبقاً:", e);
     }
 }
-
-async function refreshKeyUI(fetchModels = true) {
-    activeKeySelect.innerHTML = '';
-    if (apiKeys.length === 0) {
-        activeKeySelect.innerHTML = '<option value="">لا يوجد مفاتيح مضافة</option>';
-        activeKeyIndicator.textContent = '⚠️ بدون مفتاح API';
-        updateModelSelectUI([]);
-        return;
-    }
-
-    apiKeys.forEach((item, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = `${item.name} (${item.key.slice(0, 6)}...${item.key.slice(-4)})`;
-        if (idx === activeKeyIndex) opt.selected = true;
-        activeKeySelect.appendChild(opt);
-    });
-
-    const curr = apiKeys[activeKeyIndex];
-    activeKeyIndicator.textContent = `🔑 ${curr.name}`;
-
-    if (fetchModels && curr?.key) {
-        await fetchValidAudioModels(curr.key);
-    }
+function updateAyahBounds() {
+    const selected = surahSelect.options[surahSelect.selectedIndex];
+    if (!selected) return;
+    const count = parseInt(selected.getAttribute('data-verses') || 7);
+    fromAyah.max = count;
+    toAyah.max = count;
 }
+surahSelect.onchange = updateAyahBounds;
+loadSurahs();
 
-activeKeySelect.onchange = async () => {
-    activeKeyIndex = parseInt(activeKeySelect.value);
-    localStorage.setItem('gemini_active_key_index', activeKeyIndex);
-    await refreshKeyUI(true);
-};
-
-btnAddKey.onclick = async () => {
-    const val = newKeyValue.value.trim();
-    const name = newKeyName.value.trim() || `مفتاح ${apiKeys.length + 1}`;
-    if (!val) {
-        alert("يرجى إدخال المفتاح أولاً!");
-        return;
-    }
-    
-    btnAddKey.disabled = true;
-    btnAddKey.textContent = "⏳ جاري فحص صلاحية المفتاح...";
-
-    const models = await fetchValidAudioModels(val);
-    btnAddKey.disabled = false;
-    btnAddKey.textContent = "+ فحص وحفظ المفتاح";
-
-    if (models.length === 0) {
-        alert("المفتاح غير صالح أو تعذر الاتصال بسيرفرات جوجل!");
-        return;
-    }
-
-    apiKeys.push({ name, key: val });
-    activeKeyIndex = apiKeys.length - 1;
-    localStorage.setItem('gemini_api_keys', JSON.stringify(apiKeys));
-    localStorage.setItem('gemini_active_key_index', activeKeyIndex);
-    newKeyName.value = '';
-    newKeyValue.value = '';
-    await refreshKeyUI(false);
-    alert(`✅ تم حفظ وتفعيل المفتاح وتوفير ${models.length} موديل بنجاح!`);
-};
-
-btnDeleteKey.onclick = async () => {
-    if (apiKeys.length === 0) return;
-    if (confirm("هل أنت متأكد من حذف هذا المفتاح؟")) {
-        apiKeys.splice(activeKeyIndex, 1);
-        activeKeyIndex = Math.max(0, apiKeys.length - 1);
-        localStorage.setItem('gemini_api_keys', JSON.stringify(apiKeys));
-        localStorage.setItem('gemini_active_key_index', activeKeyIndex);
-        await refreshKeyUI(true);
-    }
-};
-
-btnRefreshModels.onclick = async () => {
-    const curr = apiKeys[activeKeyIndex];
-    if (curr?.key) {
-        btnRefreshModels.textContent = "⏳...";
-        await fetchValidAudioModels(curr.key);
-        btnRefreshModels.textContent = "🔄 تحديث الموديلات";
-    }
-};
-
-modelSelect.onchange = () => {
-    localStorage.setItem('gemini_model', modelSelect.value);
-};
-
-// ----------------------------------------------------
-// مشغل الصوت التفاعلي والكبسولة
-// ----------------------------------------------------
-const settingsModal = document.getElementById('settingsModal');
-const btnOpenSettings = document.getElementById('btnOpenSettings');
-const btnCloseSettings = document.getElementById('btnCloseSettings');
-const btnSaveSettings = document.getElementById('btnSaveSettings');
-
-btnOpenSettings.onclick = () => settingsModal.classList.remove('hidden');
-btnCloseSettings.onclick = () => settingsModal.classList.add('hidden');
-btnSaveSettings.onclick = () => settingsModal.classList.add('hidden');
-
-const btnToggleDock = document.getElementById('btnToggleDock');
-const dockButtons = document.getElementById('dockButtons');
-const toggleIcon = document.getElementById('toggleIcon');
-const toggleText = document.getElementById('toggleText');
-
+// طي / إظهار أزرار التحكم
 let dockVisible = true;
 btnToggleDock.onclick = () => {
     dockVisible = !dockVisible;
     if (dockVisible) {
         dockButtons.classList.remove('hidden');
         toggleIcon.textContent = "▼";
-        toggleText.textContent = "إخفاء الأزرار للقراءة";
+        toggleText.textContent = "إخفاء الأزرار";
     } else {
         dockButtons.classList.add('hidden');
         toggleIcon.textContent = "▲";
@@ -516,18 +317,7 @@ btnToggleDock.onclick = () => {
     }
 };
 
-const audioPlayer = document.getElementById('audioPlayer');
-const playerBar = document.getElementById('playerBar');
-const btnPlayerPlay = document.getElementById('btnPlayerPlay');
-const playerPlayIcon = document.getElementById('playerPlayIcon');
-const audioSeeker = document.getElementById('audioSeeker');
-const currentTimeTxt = document.getElementById('currentTimeTxt');
-const durationTxt = document.getElementById('durationTxt');
-const btnRewind = document.getElementById('btnRewind');
-const btnForward = document.getElementById('btnForward');
-const rewindLbl = document.getElementById('rewindLbl');
-const forwardLbl = document.getElementById('forwardLbl');
-
+// مشغل الصوت التفاعلي
 function formatTime(sec) {
     if (isNaN(sec)) return "00:00";
     const m = Math.floor(sec / 60);
@@ -558,6 +348,7 @@ audioPlayer.onloadedmetadata = () => {
 audioPlayer.onended = () => { playerPlayIcon.textContent = "▶"; };
 audioSeeker.oninput = () => { audioPlayer.currentTime = audioSeeker.value; };
 
+// مضاعفة التقديم والتأخير
 let rewindClicks = 0, rewindTimer = null;
 btnRewind.onclick = () => {
     rewindClicks++;
@@ -578,28 +369,7 @@ btnForward.onclick = () => {
     forwardTimer = setTimeout(() => { forwardClicks = 0; forwardLbl.textContent = "2s"; }, 1200);
 };
 
-// ----------------------------------------------------
-// التسجيل والاستيراد ومعالجة الصوت
-// ----------------------------------------------------
-const btnRecord = document.getElementById('btnRecord');
-const btnStop = document.getElementById('btnStop');
-const btnSave = document.getElementById('btnSave');
-const fileImport = document.getElementById('fileImport');
-const btnUpload = document.getElementById('btnUpload');
-const statusTxt = document.getElementById('statusTxt');
-const detectedBanner = document.getElementById('detectedBanner');
-const unifiedResultArea = document.getElementById('unifiedResultArea');
-const quranContent = document.getElementById('quranContent');
-const statsBar = document.getElementById('statsBar');
-const correctBadge = document.getElementById('correctBadge');
-const mistakeBadge = document.getElementById('mistakeBadge');
-
-let mediaRecorder = null;
-let audioChunks = [];
-let currentAudioBlob = null;
-let mediaStream = null;
-let currentFileName = "تلاوة.webm";
-
+// حفظ واستيراد
 btnSave.onclick = () => {
     if (!currentAudioBlob) return;
     const url = URL.createObjectURL(currentAudioBlob);
@@ -610,39 +380,35 @@ btnSave.onclick = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    statusTxt.textContent = `💾 تم حفظ (${currentFileName}) في التنزيلات.`;
+    statusTxt.textContent = `💾 تم تنزيل: ${currentFileName}`;
 };
 
 fileImport.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    let fileType = file.type;
-    if (!fileType && file.name.endsWith('.webm')) fileType = 'audio/webm';
-
-    currentAudioBlob = file.slice(0, file.size, fileType || 'audio/webm');
+    currentAudioBlob = file;
     currentFileName = file.name;
     btnSave.disabled = false;
     btnUpload.disabled = false;
 
-    audioPlayer.src = URL.createObjectURL(currentAudioBlob);
+    audioPlayer.src = URL.createObjectURL(file);
     playerBar.classList.remove('hidden');
     playerPlayIcon.textContent = "▶";
     statusTxt.textContent = `📁 تم استيراد: ${file.name}`;
 });
 
+// التسجيل المباشر
 btnRecord.onclick = async () => {
     try {
         if (!audioPlayer.paused) audioPlayer.pause();
 
         mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        let mimeType = 'audio/webm';
-        if (!MediaRecorder.isTypeSupported('audio/webm')) {
-            if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
-            else mimeType = '';
-        }
+        let options = {};
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) options = { mimeType: 'audio/webm;codecs=opus' };
+        else if (MediaRecorder.isTypeSupported('audio/webm')) options = { mimeType: 'audio/webm' };
+        else if (MediaRecorder.isTypeSupported('audio/mp4')) options = { mimeType: 'audio/mp4' };
 
-        mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+        mediaRecorder = new MediaRecorder(mediaStream, options);
         audioChunks = [];
         currentAudioBlob = null;
 
@@ -660,6 +426,8 @@ btnRecord.onclick = async () => {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             currentFileName = `تلاوة_${timestamp}.${actualType.includes('mp4') ? 'm4a' : 'webm'}`;
 
+            btnRecord.disabled = false;
+            btnStop.disabled = true;
             btnSave.disabled = false;
             btnUpload.disabled = false;
 
@@ -667,7 +435,7 @@ btnRecord.onclick = async () => {
             playerBar.classList.remove('hidden');
             playerPlayIcon.textContent = "▶";
 
-            statusTxt.textContent = "✅ تم حفظ التلاوة، جاهز للفحص.";
+            statusTxt.textContent = "✅ تم التسجيل، اضغط فحص وتقييم للبدء.";
             if (mediaStream) {
                 mediaStream.getTracks().forEach(t => t.stop());
                 mediaStream = null;
@@ -677,9 +445,10 @@ btnRecord.onclick = async () => {
         mediaRecorder.start(250);
         btnRecord.disabled = true;
         btnStop.disabled = false;
-        statusTxt.textContent = "🔴 جاري التسجيل الآن...";
+        statusTxt.textContent = "🔴 جاري التسجيل.. اتلُ الآن.";
     } catch (err) {
-        alert("يرجى إعطاء صلاحية المايكروفون: " + err.message);
+        console.error(err);
+        alert("تعذر فتح المايكروفون: " + err.message);
         btnRecord.disabled = false;
         btnStop.disabled = true;
     }
@@ -688,8 +457,6 @@ btnRecord.onclick = async () => {
 btnStop.onclick = () => {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
-        btnRecord.disabled = false;
-        btnStop.disabled = true;
     }
 };
 
@@ -701,34 +468,15 @@ function cleanArabic(text) {
         .replace(/[إأآاٱ]/g, 'ا')
         .replace(/[يى]/g, 'ي')
         .replace(/ة/g, 'ه')
-        .replace(/ؤ/g, 'و')
-        .replace(/ئ/g, 'ي')
+        .replace(/[ؤءئ]/g, '')
+        .replace(/وو+/g, 'و')
+        .replace(/\s+/g, ' ')
         .trim();
 }
 
-// دالة ذكية لإزالة نطق أرقام الآيات والكلمات الدخيلة من التسجيل
-function filterSpokenAyahNumbers(words) {
-    const numberWords = new Set([
-        'ايه', 'رقم', 'مائه', 'ميه', 'مائتان', 'ميتين', 'ثلاثمائه', 'اربعمائه', 'خمسمائه',
-        'واحد', 'اثنان', 'اثنين', 'ثلاثه', 'ثلاث', 'اربعه', 'اربع', 'خمسه', 'خمس', 'سته', 'ست',
-        'سبعه', 'سبع', 'ثمانيه', 'ثماني', 'ثمان', 'تسعه', 'تسع', 'عشره', 'عشر', 'عشرين', 'عشرون',
-        'ثلاثين', 'ثلاثون', 'اربعين', 'اربعون', 'خمسين', 'خمسون', 'ستين', 'ستون', 'سبعين', 'سبعون',
-        'ثمانين', 'ثمانون', 'تسعين', 'تسعون'
-    ]);
-
-    return words.filter(w => {
-        const cleaned = cleanArabic(w);
-        // استبعاد الأرقام الحسابية الصريحة
-        if (/^\d+$/.test(w) \vert{}\vert{} /^[\u0660-\u0669]+$/.test(w)) return false;
-        // استبعاد الكلمات التي تطابق أسماء الأعداد
-        if (numberWords.has(cleaned)) return false;
-        return true;
-    });
-}
-
 function toArabicNumber(n) {
-    const farsiDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    return n.toString().replace(/\d/g, x => farsiDigits[x]);
+    const farsi = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return n.toString().replace(/\d/g, x => farsi[x]);
 }
 
 function getDiffOpcodes(a, b) {
@@ -796,148 +544,87 @@ function blobToBase64(blob) {
     });
 }
 
-// دالة الفحص عبر الموديل مع Fallback التلقائي
-async function callGeminiWithAutoFallback(apiKey, requestBody) {
-    if (!dynamicAudioModels || dynamicAudioModels.length === 0) {
-        await fetchValidAudioModels(apiKey);
-    }
-
-    const selectedModel = modelSelect.value;
-    const modelsToTry = [selectedModel, ...dynamicAudioModels.filter(m => m !== selectedModel)];
-
-    let lastErrorMessage = "";
-
-    for (const modelName of modelsToTry) {
-        if (!modelName) continue;
-        try {
-            statusTxt.textContent = `🤖 جاري الفحص عبر (${modelName})...`;
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                const code = data.error.code;
-                const msg = data.error.message || "";
-                lastErrorMessage = msg;
-
-                if (code === 429) {
-                    throw new Error("نفدت كوتة هذا المفتاح حالياً (Rate Limit). يرجى الانتظار دقيقة أو التبديل لمفتاح آخر.");
-                }
-
-                console.warn(`الموديل ${modelName} غير متاح أو مضغوط (${code}). التحويل للبديل...`);
-                continue;
-            }
-
-            if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-                console.warn(`الموديل ${modelName} لم يُرجع نصوصاً صالحة.`);
-                continue;
-            }
-
-            return data.candidates[0].content.parts[0].text.trim();
-
-        } catch (err) {
-            if (err.message.includes("Rate Limit")) throw err;
-            console.warn(`خطأ مع ${modelName}:`, err);
-        }
-    }
-
-    throw new Error(`تعذر التقييم عبر الموديلات المتاحة. تنبيه: ${lastErrorMessage || "يرجى المحاولة مجدداً"}`);
-}
-
-// ----------------------------------------------------
-// لوجيك الفحص والمطابقة
-// ----------------------------------------------------
+// زر الفحص والمطابقة
 btnUpload.onclick = async () => {
-    if (apiKeys.length === 0 || !apiKeys[activeKeyIndex]?.key) {
+    const key = apiKeyInput.value.trim();
+    if (!key) {
         settingsModal.classList.remove('hidden');
-        alert("يرجى إضافة مفتاح API أولاً من نافذة الإعدادات!");
+        alert("يرجى إدخال مفتاح API أولاً!");
         return;
     }
 
-    const currentKey = apiKeys[activeKeyIndex].key;
-    statusTxt.textContent = "🔍 جاري تجهيز التسجيل للتحليل...";
+    const activeModel = modelSelect.value;
+    statusTxt.textContent = "🔍 جاري تحليل الصوت وفحص التلاوة...";
     btnUpload.disabled = true;
 
     try {
         const base64Audio = await blobToBase64(currentAudioBlob);
         const mimeType = currentAudioBlob.type.split(';')[0] || 'audio/webm';
 
-        let targetSurah, targetStart, targetEnd, transcription = "", intent = "recite";
-
+        let promptInstruction = "";
         if (currentMode === 'auto') {
-            const promptInstruction = `
-أنت مسجل قرآني خبير.
-1. استمع للتسجيل بدقة.
-2. حدد النية (intent): "display_only" إذا طلب فقط عرض السورة بصوته، أو "recite" إذا كان يتلو التلاوة.
+            promptInstruction = `
+أنت خبير في الاستماع لتلاوات القرآن الكريم.
+1. استمع للتسجيل.
+2. حدد النية (intent): "display_only" إذا طلب فقط عرض السورة بالاسم، أو "recite" إذا كان يتلو قرآناً.
 3. استخرج: surah_number (1-114), surah_name, start_ayah, end_ayah.
-4. فرغ النص المنطوق حرفياً (transcription) كما لفظ بدون تشكيل أو تصحيح من حفظك.
-5. لا تكتب أرقام الآيات إذا لفظها القارئ (مثل: "مئة وتسعة وثمانون" أو "آية كذا")، فرغ آيات القرآن فقط.
-6. الإخراج بصيغة JSON فقط:
-{"intent": "recite", "surah_number": 1, "start_ayah": 1, "end_ayah": 7, "surah_name": "الفاتحة", "transcription": "..."}
-`;
-            const reqBody = {
-                contents: [{ parts: [{ text: promptInstruction }, { inline_data: { mime_type: mimeType, data: base64Audio } }] }],
-                generationConfig: { temperature: 0.0, response_mime_type: "application/json" }
-            };
-
-            const rawResponseText = await callGeminiWithAutoFallback(currentKey, reqBody);
-            const parsed = JSON.parse(rawResponseText);
-
-            targetSurah = parsed.surah_number;
-            targetStart = parsed.start_ayah;
-            targetEnd = parsed.end_ayah;
-            intent = parsed.intent || 'recite';
-            transcription = parsed.transcription || '';
-            currentFileName = `${parsed.surah_name}_${targetStart}_إلى_${targetEnd}.webm`;
-
-            detectedBanner.classList.remove('hidden');
-            detectedBanner.innerHTML = `🎯 تم التعرف: <strong>سورة ${parsed.surah_name}</strong> (الآيات ${targetStart} - ${targetEnd})`;
+4. فرّغ النص الصوتي كاملاً بدقة دون تصحيح إملائي أو تجويدي من حفظك وبدون تشكيل.
+5. أخرج بصيغة JSON فقط:
+{
+  "intent": "recite",
+  "surah_number": 1,
+  "start_ayah": 1,
+  "end_ayah": 7,
+  "surah_name": "الفاتحة",
+  "transcription": "..."
+}`;
         } else {
-            targetSurah = parseInt(surahSelect.value);
-            targetStart = parseInt(fromAyah.value);
-            targetEnd = parseInt(toAyah.value);
-
-            if (targetStart > targetEnd) {
-                alert("تأكد أن بداية الآيات أقل من أو تساوي نهايتها!");
-                btnUpload.disabled = false;
-                return;
-            }
-
-            const promptInstruction = `فرّغ الكلمات المنطوقة في التسجيل القرآني بدقة تامة بدون تشكيل، ولا تصحح أي خطأ من حفظك. لا تكتب رقم الآية إذا نطقها القارئ. أخرج النص فقط مباشرة.`;
-            const reqBody = {
-                contents: [{ parts: [{ text: promptInstruction }, { inline_data: { mime_type: mimeType, data: base64Audio } }] }],
-                generationConfig: { temperature: 0.0 }
-            };
-
-            transcription = await callGeminiWithAutoFallback(currentKey, reqBody);
-            const sName = SURAHS.find(s => s.id === targetSurah).name;
-            currentFileName = `تسميع_${sName}_${targetStart}_إلى_${targetEnd}.webm`;
-            detectedBanner.classList.add('hidden');
+            const sNum = surahSelect.value;
+            const sName = surahSelect.options[surahSelect.selectedIndex].text;
+            const sAyah = parseInt(fromAyah.value);
+            const eAyah = parseInt(toAyah.value);
+            promptInstruction = `
+المستخدم يتلو من سورة ${sName} الآيات من ${sAyah} إلى ${eAyah}.
+فرّغ الصوت بدقة تامة كما نطق بدون أي تشكيل وبدون تصحيح من حفظك.
+الإخراج بصيغة JSON فقط:
+{
+  "intent": "recite",
+  "surah_number": ${sNum},
+  "start_ayah": ${sAyah},
+  "end_ayah": ${eAyah},
+  "surah_name": "${sName}",
+  "transcription": "..."
+}`;
         }
 
-        statusTxt.textContent = "⏳ جاري جلب نص المصحف والمطابقة...";
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${key}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptInstruction }, { inline_data: { mime_type: mimeType, data: base64Audio } }] }],
+                generationConfig: { temperature: 0.0, response_mime_type: "application/json" }
+            })
+        });
 
-        // جلب كلمات الآيات وترتيبها بدقة وفق الـ position لضمان ظهور أول كلمة دائماً
+        const geminiData = await res.json();
+        if (geminiData.error) throw new Error(geminiData.error.message);
+
+        const parsed = JSON.parse(geminiData.candidates[0].content.parts[0].text);
+        const { surah_number, start_ayah, end_ayah, surah_name, intent, transcription } = parsed;
+
+        statusTxt.textContent = "⏳ جاري مطابقة الآيات مع المصحف...";
+
+        // جلب كلمات المصحف
         const refWords = [];
-        for (let a = targetStart; a <= targetEnd; a++) {
-            const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${targetSurah}:${a}?words=true&word_fields=text_imlaei,text_uthmani,position`);
-            const json = await res.json();
-            
-            const wordsList = (json.verse.words || []).sort((w1, w2) => w1.position - w2.position);
-
-            for (const w of wordsList) {
-                if (w.text_uthmani && (w.char_type_name === "word" || w.text_imlaei)) {
+        for (let a = start_ayah; a <= end_ayah; a++) {
+            const apiRes = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surah_number}:${a}?words=true&word_fields=text_imlaei,text_uthmani,position`);
+            const json = await apiRes.json();
+            for (const w of json.verse.words) {
+                if (w.char_type_name === "word") {
                     refWords.push({
-                        verse_key: `${targetSurah}:${a}`,
+                        verse_key: `${surah_number}:${a}`,
                         text_uthmani: w.text_uthmani,
-                        text_imlaei: w.text_imlaei || w.text_uthmani
+                        text_imlaei: w.text_imlaei
                     });
                 }
             }
@@ -946,38 +633,31 @@ btnUpload.onclick = async () => {
         const flatReferenceWords = [];
         for (let idx = 0; idx < refWords.length; idx++) {
             const item = refWords[idx];
-            const rawImlaei = cleanArabic(item.text_imlaei || item.text_uthmani || '');
-            if (!rawImlaei) continue;
+            const subWords = (item.text_imlaei || '').split(/\s+/).filter(Boolean);
+            for (let sIdx = 0; sIdx < subWords.length; sIdx++) {
+                const sub = subWords[sIdx];
+                if (cleanArabic(sub)) {
+                    const displayUthmani = (sIdx === 0) ? item.text_uthmani : "";
+                    const isLastInVerse = (sIdx === subWords.length - 1) && 
+                        (idx === refWords.length - 1 || refWords[idx+1].verse_key !== item.verse_key);
+                    
+                    const ayahNum = item.verse_key.split(':')[1];
+                    const ayahMarker = isLastInVerse ? ` <span class="text-amber-600 font-sans text-lg">﴿${toArabicNumber(ayahNum)}﴾</span>` : "";
 
-            const isLastInVerse = (idx === refWords.length - 1) || (refWords[idx + 1].verse_key !== item.verse_key);
-            const ayahNum = item.verse_key.split(':')[1];
-            const ayahMarker = isLastInVerse ? ` <span class="text-amber-600 font-sans text-xl inline-block my-1 align-middle">﴿${toArabicNumber(ayahNum)}﴾</span>` : "";
-
-            flatReferenceWords.push({
-                verse_key: item.verse_key,
-                text_uthmani: item.text_uthmani,
-                text_imlaei_single: item.text_imlaei,
-                ayah_marker: ayahMarker
-            });
-        }
-
-        if (intent === 'display_only') {
-            let displayHtml = "";
-            for (const item of flatReferenceWords) {
-                if (item.text_uthmani) displayHtml += `<span class="inline-block my-1">${item.text_uthmani}</span> `;
-                if (item.ayah_marker) displayHtml += item.ayah_marker + " ";
+                    flatReferenceWords.push({
+                        verse_key: item.verse_key,
+                        text_uthmani: displayUthmani,
+                        text_imlaei_single: sub,
+                        ayah_marker: ayahMarker
+                    });
+                }
             }
-            quranContent.innerHTML = displayHtml;
-            unifiedResultArea.classList.remove('hidden');
-            statsBar.classList.add('hidden');
-            statusTxt.textContent = "✅ تم استعراض الآيات المطلوبة.";
-            return;
         }
 
-        // تفريغ الكلمات مع فلترة أي نطق لأرقام الآيات
-        const rawRecitedWords = transcription.split(/\s+/).filter(Boolean);
-        const recitedWords = filterSpokenAyahNumbers(rawRecitedWords);
+        detectedBanner.classList.remove('hidden');
+        detectedBanner.innerHTML = `🎯 الموضع: <strong>سورة ${surah_name}</strong> (الآيات ${start_ayah} - ${end_ayah})`;
 
+        const recitedWords = (transcription || "").split(/\s+/).filter(Boolean);
         const cleanRef = flatReferenceWords.map(w => cleanArabic(w.text_imlaei_single));
         const cleanRec = recitedWords.map(w => cleanArabic(w));
         const opcodes = getDiffOpcodes(cleanRef, cleanRec);
@@ -990,7 +670,7 @@ btnUpload.onclick = async () => {
                 for (let idx = op.i1; idx < op.i2; idx++) {
                     correctCount++;
                     const item = flatReferenceWords[idx];
-                    if (item.text_uthmani) finalUnifiedHtml += `<span class="text-slate-800 inline-block my-1">${item.text_uthmani}</span> `;
+                    if (item.text_uthmani) finalUnifiedHtml += `<span class="text-slate-800">${item.text_uthmani}</span> `;
                     if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                 }
             } else if (op.tag === 'replace') {
@@ -1003,26 +683,26 @@ btnUpload.onclick = async () => {
                     const recW = k < recLen ? recitedWords[op.j1 + k] : null;
 
                     if (item && recW) {
-                        finalUnifiedHtml += `<span class="bg-red-100 text-red-700 border-b-2 border-red-500 px-1.5 py-0.5 rounded inline-block my-1 cursor-help" title="نطقت: ${recW}">${item.text_uthmani}</span> `;
+                        finalUnifiedHtml += `<span class="bg-red-100 text-red-700 border-b-2 border-red-500 px-1 rounded cursor-help" title="نطقت: ${recW}">${item.text_uthmani}</span> `;
                         if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                     } else if (item && !recW) {
-                        finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1.5 py-0.5 rounded inline-block my-1 cursor-help" title="منسية">${item.text_uthmani}</span> `;
+                        finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1 rounded cursor-help" title="منسية">${item.text_uthmani}</span> `;
                         if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                     } else if (!item && recW) {
-                        finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-2 py-0.5 rounded inline-block my-1 cursor-help" title="زيادة">+ (${recW})</span> `;
+                        finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-1.5 py-0.5 rounded cursor-help" title="زيادة">+ (${recW})</span> `;
                     }
                 }
             } else if (op.tag === 'delete') {
                 mistakesCount += (op.i2 - op.i1);
                 for (let idx = op.i1; idx < op.i2; idx++) {
                     const item = flatReferenceWords[idx];
-                    if (item.text_uthmani) finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1.5 py-0.5 rounded inline-block my-1 cursor-help" title="منسية">${item.text_uthmani}</span> `;
+                    if (item.text_uthmani) finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1 rounded cursor-help" title="منسية">${item.text_uthmani}</span> `;
                     if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                 }
             } else if (op.tag === 'insert') {
                 mistakesCount += (op.j2 - op.j1);
                 for (let idx = op.j1; idx < op.j2; idx++) {
-                    finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-2 py-0.5 rounded inline-block my-1 cursor-help" title="زيادة">+ (${recitedWords[idx]})</span> `;
+                    finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-1.5 py-0.5 rounded cursor-help" title="زيادة">+ (${recitedWords[idx]})</span> `;
                 }
             }
         }
@@ -1037,14 +717,11 @@ btnUpload.onclick = async () => {
         statusTxt.textContent = "✅ اكتمل التقييم بنجاح!";
     } catch (err) {
         console.error(err);
-        statusTxt.textContent = `❌ حدث خطأ: ${err.message}`;
+        statusTxt.textContent = `❌ خطأ: ${err.message}`;
     } finally {
         btnUpload.disabled = false;
     }
 };
-
-// تشغيل الفحص الأولي عند فتح الصفحة
-refreshKeyUI(true);
 </script>
 </body>
 </html>
