@@ -81,7 +81,7 @@
     <!-- 2. المحتوى الرئيسي -->
     <main class="max-w-3xl mx-auto px-4 space-y-4">
         
-        <!-- حقول التحديد اليدوي (تختفي وتظهر حسب الوضع المختار) -->
+        <!-- حقول التحديد اليدوي -->
         <div id="manualPickerCard" class="hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-sm transition">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
@@ -143,13 +143,10 @@
                 ⏹️ إيقاف
             </button>
 
-            <!-- زر الاستيراد يظهر فقط في نمط الكشف الذكي -->
             <label id="lblImport" for="fileImport" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium px-3.5 py-2.5 rounded-xl cursor-pointer flex items-center gap-1 transition">
                 <span>📂</span> استيراد
             </label>
-            <!-- الجديد -->
             <input type="file" id="fileImport" accept="audio/*,video/webm,audio/webm,.webm,.m4a,.mp3,.wav" class="hidden">
-
 
             <button id="btnSave" disabled class="bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-slate-200 font-medium text-sm px-3.5 py-2.5 rounded-xl transition" title="حفظ التسجيل على الهاتف">
                 💾 حفظ
@@ -169,7 +166,7 @@
                 <button id="btnCloseSettings" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <!-- قسم إدارة المفاتيح المتعددة -->
+            <!-- قسم إدارة المفاتيح -->
             <div class="space-y-3">
                 <label class="block font-bold text-slate-700 text-xs">مفتاح API النشط حالياً:</label>
                 <div class="flex gap-2">
@@ -177,28 +174,27 @@
                     <button id="btnDeleteKey" class="p-2 text-red-600 hover:bg-red-50 rounded-lg border border-red-200" title="حذف المفتاح المختار">🗑️</button>
                 </div>
 
-                <!-- إضافة مفتاح جديد (+) -->
+                <!-- إضافة مفتاح جديد -->
                 <div class="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl space-y-2">
                     <span class="text-xs font-bold text-slate-600">إضافة مفتاح إضافي (+):</span>
                     <div class="flex gap-2">
                         <input type="text" id="newKeyName" placeholder="اسم رمزي (مثلاً: حساب 2)" class="w-1/3 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none">
                         <input type="password" id="newKeyValue" placeholder="AIzaSy..." class="w-2/3 p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none">
                     </div>
-                    <button id="btnAddKey" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-1.5 rounded-lg transition">+ حفظ المفتاح الجديد</button>
+                    <button id="btnAddKey" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-1.5 rounded-lg transition">+ فحص وحفظ المفتاح</button>
                 </div>
             </div>
 
-            <!-- قسم اختيار الموديل -->
+            <!-- قسم اختيار الموديل الديناميكي -->
             <div class="space-y-2 text-sm pt-2 border-t">
-                <label class="block font-bold text-slate-700 text-xs">الموديل المستخدم:</label>
+                <div class="flex justify-between items-center">
+                    <label class="block font-bold text-slate-700 text-xs">الموديل المستخدم:</label>
+                    <button id="btnRefreshModels" class="text-[11px] text-emerald-700 hover:underline">🔄 تحديث الموديلات</button>
+                </div>
                 <select id="modelSelect" class="w-full p-2.5 border border-slate-300 rounded-lg text-xs bg-slate-50 outline-none font-medium">
-                    <option value="gemini-3.7-flash" selected>Gemini 3.7 Flash (سريع وحديث)</option>
-                    <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                    <option value="gemini-2.5-pro">Gemini 2.5 Pro (أعلى دقة)</option>
-                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                    <option value="">جاري فحص الموديلات المتاحة...</option>
                 </select>
-                <p class="text-[11px] text-slate-400">إذا نفدت كوتة موديل (20/20)، غيّر إلى موديل آخر أو بدّل المفتاح مباشرة.</p>
+                <p id="modelStatusHint" class="text-[11px] text-slate-500">سيتم تفعيل التبديل التلقائي (Fallback) إذا واجه الموديل أي ضغط.</p>
             </div>
 
             <div class="pt-3 flex justify-end">
@@ -252,9 +248,7 @@ const SURAHS = [
     {id: 112, name: "الإخلاص", verses: 4}, {id: 113, name: "الفلق", verses: 5}, {id: 114, name: "الناس", verses: 6}
 ];
 
-// الحالة والأنماط (Mode: 'auto' | 'manual')
 let currentMode = 'auto';
-
 const tabAuto = document.getElementById('tabAuto');
 const tabManual = document.getElementById('tabManual');
 const headerSub = document.getElementById('headerSub');
@@ -264,7 +258,6 @@ const surahSelect = document.getElementById('surahSelect');
 const fromAyah = document.getElementById('fromAyah');
 const toAyah = document.getElementById('toAyah');
 
-// ملء قائمة السور
 SURAHS.forEach(s => {
     const opt = document.createElement('option');
     opt.value = s.id;
@@ -282,7 +275,6 @@ function updateAyahBounds() {
 surahSelect.addEventListener('change', updateAyahBounds);
 updateAyahBounds();
 
-// التبديل بين النمطين
 tabAuto.onclick = () => {
     currentMode = 'auto';
     tabAuto.className = "px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white shadow-sm transition";
@@ -302,10 +294,9 @@ tabManual.onclick = () => {
 };
 
 // ----------------------------------------------------
-// نظام إدارة مفاتيح API المتعددة (Multi-Key Manager)
+// إدارة المفاتيح والموديلات الديناميكية
 // ----------------------------------------------------
 let apiKeys = JSON.parse(localStorage.getItem('gemini_api_keys') || '[]');
-// دعم المفتاح القديم إن وجد
 if (apiKeys.length === 0 && localStorage.getItem('gemini_api_key')) {
     apiKeys.push({ name: 'مفتاحي الرئيسي', key: localStorage.getItem('gemini_api_key') });
     localStorage.setItem('gemini_api_keys', JSON.stringify(apiKeys));
@@ -321,12 +312,90 @@ const btnAddKey = document.getElementById('btnAddKey');
 const newKeyName = document.getElementById('newKeyName');
 const newKeyValue = document.getElementById('newKeyValue');
 const modelSelect = document.getElementById('modelSelect');
+const btnRefreshModels = document.getElementById('btnRefreshModels');
+const modelStatusHint = document.getElementById('modelStatusHint');
 
-function refreshKeyUI() {
+let dynamicAudioModels = [];
+
+function updateModelSelectUI(models) {
+    modelSelect.innerHTML = '';
+    if (!models || models.length === 0) {
+        modelSelect.innerHTML = '<option value="">لا توجد موديلات متاحة</option>';
+        return;
+    }
+
+    const savedModel = localStorage.getItem('gemini_model');
+    models.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m + (m.includes('flash') ? ' (سريع وموصى به)' : '');
+        if (m === savedModel) opt.selected = true;
+        modelSelect.appendChild(opt);
+    });
+
+    if (!modelSelect.value && models.length > 0) {
+        modelSelect.value = models[0];
+        localStorage.setItem('gemini_model', models[0]);
+    }
+}
+
+async function fetchValidAudioModels(apiKey) {
+    if (!apiKey) return [];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`كود: ${response.status}`);
+
+        const data = await response.json();
+        const rawModels = data.models || [];
+
+        const filtered = rawModels
+            .filter(m => {
+                const name = m.name.toLowerCase();
+                const methods = m.supportedGenerationMethods || [];
+                const supportsGenerate = methods.includes("generateContent");
+                const isGeminiFamily = name.includes("gemini");
+                const isExcluded = name.includes("image") || 
+                                   name.includes("tts") || 
+                                   name.includes("robotics") || 
+                                   name.includes("computer-use");
+                return supportsGenerate && isGeminiFamily && !isExcluded;
+            })
+            .map(m => m.name.replace("models/", ""));
+
+        // ترتيب: موديلات Flash ذات الكفاءة العالية أولاً
+        filtered.sort((a, b) => {
+            const aFlash = a.includes("flash") ? 1 : 0;
+            const bFlash = b.includes("flash") ? 1 : 0;
+            return bFlash - aFlash;
+        });
+
+        dynamicAudioModels = filtered.length > 0 ? filtered : ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+        updateModelSelectUI(dynamicAudioModels);
+        modelStatusHint.textContent = `✅ تم كشف وتفعيل ${dynamicAudioModels.length} موديل صالح لصوتيات هذا الحساب.`;
+        return dynamicAudioModels;
+
+    } catch (err) {
+        clearTimeout(timeoutId);
+        console.warn("فشل الاتصال بجوجل لكشف الموديلات، تفعيل الموديلات الافتراضية:", err);
+        dynamicAudioModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+        updateModelSelectUI(dynamicAudioModels);
+        modelStatusHint.textContent = "⚠️ استخدمنا قائمة الموديلات الافتراضية.";
+        return dynamicAudioModels;
+    }
+}
+
+async function refreshKeyUI(fetchModels = true) {
     activeKeySelect.innerHTML = '';
     if (apiKeys.length === 0) {
         activeKeySelect.innerHTML = '<option value="">لا يوجد مفاتيح مضافة</option>';
         activeKeyIndicator.textContent = '⚠️ بدون مفتاح API';
+        updateModelSelectUI([]);
         return;
     }
 
@@ -340,50 +409,71 @@ function refreshKeyUI() {
 
     const curr = apiKeys[activeKeyIndex];
     activeKeyIndicator.textContent = `🔑 ${curr.name}`;
+
+    if (fetchModels && curr?.key) {
+        await fetchValidAudioModels(curr.key);
+    }
 }
 
-activeKeySelect.onchange = () => {
+activeKeySelect.onchange = async () => {
     activeKeyIndex = parseInt(activeKeySelect.value);
     localStorage.setItem('gemini_active_key_index', activeKeyIndex);
-    refreshKeyUI();
+    await refreshKeyUI(true);
 };
 
-btnAddKey.onclick = () => {
+btnAddKey.onclick = async () => {
     const val = newKeyValue.value.trim();
     const name = newKeyName.value.trim() || `مفتاح ${apiKeys.length + 1}`;
     if (!val) {
         alert("يرجى وضع المفتاح أولاً!");
         return;
     }
+    
+    btnAddKey.disabled = true;
+    btnAddKey.textContent = "⏳ جاري فحص صلاحية المفتاح...";
+
+    const models = await fetchValidAudioModels(val);
+    btnAddKey.disabled = false;
+    btnAddKey.textContent = "+ فحص وحفظ المفتاح";
+
+    if (models.length === 0) {
+        alert("المفتاح غير صالح أو لم يستطع الاتصال بسيرفرات جوجل!");
+        return;
+    }
+
     apiKeys.push({ name, key: val });
     activeKeyIndex = apiKeys.length - 1;
     localStorage.setItem('gemini_api_keys', JSON.stringify(apiKeys));
     localStorage.setItem('gemini_active_key_index', activeKeyIndex);
     newKeyName.value = '';
     newKeyValue.value = '';
-    refreshKeyUI();
-    alert("✅ تم حفظ المفتاح وتفعيله.");
+    await refreshKeyUI(false);
+    alert(`✅ تم حفظ وتفعيل المفتاح مع ${models.length} موديل متاح!`);
 };
 
-btnDeleteKey.onclick = () => {
+btnDeleteKey.onclick = async () => {
     if (apiKeys.length === 0) return;
     if (confirm("هل أنت متأكد من حذف هذا المفتاح؟")) {
         apiKeys.splice(activeKeyIndex, 1);
         activeKeyIndex = Math.max(0, apiKeys.length - 1);
         localStorage.setItem('gemini_api_keys', JSON.stringify(apiKeys));
         localStorage.setItem('gemini_active_key_index', activeKeyIndex);
-        refreshKeyUI();
+        await refreshKeyUI(true);
     }
 };
 
-if (localStorage.getItem('gemini_model')) {
-    modelSelect.value = localStorage.getItem('gemini_model');
-}
+btnRefreshModels.onclick = async () => {
+    const curr = apiKeys[activeKeyIndex];
+    if (curr?.key) {
+        btnRefreshModels.textContent = "⏳...";
+        await fetchValidAudioModels(curr.key);
+        btnRefreshModels.textContent = "🔄 تحديث الموديلات";
+    }
+};
+
 modelSelect.onchange = () => {
     localStorage.setItem('gemini_model', modelSelect.value);
 };
-
-refreshKeyUI();
 
 // ----------------------------------------------------
 // مشغل الصوت التفاعلي والكبسولة
@@ -517,12 +607,15 @@ fileImport.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    currentAudioBlob = file;
+    let fileType = file.type;
+    if (!fileType && file.name.endsWith('.webm')) fileType = 'audio/webm';
+
+    currentAudioBlob = file.slice(0, file.size, fileType || 'audio/webm');
     currentFileName = file.name;
     btnSave.disabled = false;
     btnUpload.disabled = false;
 
-    audioPlayer.src = URL.createObjectURL(file);
+    audioPlayer.src = URL.createObjectURL(currentAudioBlob);
     playerBar.classList.remove('hidden');
     playerPlayIcon.textContent = "▶";
     statusTxt.textContent = `📁 تم استيراد: ${file.name}`;
@@ -673,8 +766,64 @@ function blobToBase64(blob) {
     });
 }
 
+// دالة الفحص الذكي مع Fallback التلقائي
+async function callGeminiWithAutoFallback(apiKey, requestBody) {
+    if (!dynamicAudioModels || dynamicAudioModels.length === 0) {
+        await fetchValidAudioModels(apiKey);
+    }
+
+    // جعل الموديل المختار يدوياً في مقدمة المحاولة
+    const selectedModel = modelSelect.value;
+    const modelsToTry = [selectedModel, ...dynamicAudioModels.filter(m => m !== selectedModel)];
+
+    let lastErrorMessage = "";
+
+    for (const modelName of modelsToTry) {
+        if (!modelName) continue;
+        try {
+            statusTxt.textContent = `🤖 جاري الفحص عبر (${modelName})...`;
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                const code = data.error.code;
+                const msg = data.error.message || "";
+                lastErrorMessage = msg;
+
+                if (code === 429) {
+                    throw new Error("نفدت كوتة هذا المفتاح حالياً (Rate Limit). يرجى الانتظار دقيقة أو التبديل لمفتاح آخر.");
+                }
+
+                console.warn(`الموديل ${modelName} غير متاح أو مضغوط (${code}). التبديل للبديل التالي...`);
+                continue;
+            }
+
+            if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+                console.warn(`الموديل ${modelName} لم يُرجع نصوصاً صالحة.`);
+                continue;
+            }
+
+            return data.candidates[0].content.parts[0].text.trim();
+
+        } catch (err) {
+            if (err.message.includes("Rate Limit")) throw err;
+            console.warn(`خطأ مع ${modelName}:`, err);
+        }
+    }
+
+    throw new Error(`تعذر التقييم عبر الموديلات المتاحة. تنبيه: ${lastErrorMessage || "يرجى المحاولة مجدداً"}`);
+}
+
 // ----------------------------------------------------
-// لوجيك الفحص والمقارنة الموحد
+// لوجيك الفحص والمطابقة
 // ----------------------------------------------------
 btnUpload.onclick = async () => {
     if (apiKeys.length === 0 || !apiKeys[activeKeyIndex]?.key) {
@@ -684,8 +833,7 @@ btnUpload.onclick = async () => {
     }
 
     const currentKey = apiKeys[activeKeyIndex].key;
-    const activeModel = modelSelect.value;
-    statusTxt.textContent = "🔍 جاري الفحص والمعالجة عبر الذكاء الاصطناعي...";
+    statusTxt.textContent = "🔍 جاري تجهيز التسجيل للتحليل...";
     btnUpload.disabled = true;
 
     try {
@@ -695,7 +843,6 @@ btnUpload.onclick = async () => {
         let targetSurah, targetStart, targetEnd, transcription = "", intent = "recite";
 
         if (currentMode === 'auto') {
-            // كشف تلقائي
             const promptInstruction = `
 أنت مسجل قرآني خبير.
 1. استمع للتسجيل بدقة.
@@ -710,16 +857,9 @@ btnUpload.onclick = async () => {
                 generationConfig: { temperature: 0.0, response_mime_type: "application/json" }
             };
 
-            const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${currentKey}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(reqBody)
-            });
+            const rawResponseText = await callGeminiWithAutoFallback(currentKey, reqBody);
+            const parsed = JSON.parse(rawResponseText);
 
-            const gData = await geminiRes.json();
-            if (gData.error) throw new Error(gData.error.message);
-
-            const parsed = JSON.parse(gData.candidates[0].content.parts[0].text);
             targetSurah = parsed.surah_number;
             targetStart = parsed.start_ayah;
             targetEnd = parsed.end_ayah;
@@ -730,7 +870,6 @@ btnUpload.onclick = async () => {
             detectedBanner.classList.remove('hidden');
             detectedBanner.innerHTML = `🎯 تم التعرف: <strong>سورة ${parsed.surah_name}</strong> (الآيات ${targetStart} - ${targetEnd})`;
         } else {
-            // تحديد يدوي
             targetSurah = parseInt(surahSelect.value);
             targetStart = parseInt(fromAyah.value);
             targetEnd = parseInt(toAyah.value);
@@ -747,16 +886,7 @@ btnUpload.onclick = async () => {
                 generationConfig: { temperature: 0.0 }
             };
 
-            const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${currentKey}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(reqBody)
-            });
-
-            const gData = await geminiRes.json();
-            if (gData.error) throw new Error(gData.error.message);
-
-            transcription = gData.candidates[0].content.parts[0].text.trim();
+            transcription = await callGeminiWithAutoFallback(currentKey, reqBody);
             const sName = SURAHS.find(s => s.id === targetSurah).name;
             currentFileName = `تسميع_${sName}_${targetStart}_إلى_${targetEnd}.webm`;
             detectedBanner.classList.add('hidden');
@@ -764,7 +894,6 @@ btnUpload.onclick = async () => {
 
         statusTxt.textContent = "⏳ جاري جلب نص المصحف والمطابقة...";
 
-        // جلب كلمات الآيات من Quran.com API
         const refWords = [];
         for (let a = targetStart; a <= targetEnd; a++) {
             const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${targetSurah}:${a}?words=true&word_fields=text_imlaei,text_uthmani,position`);
@@ -807,7 +936,6 @@ btnUpload.onclick = async () => {
             }
         }
 
-        // نمط العرض الصوتي فقط
         if (intent === 'display_only') {
             let displayHtml = "";
             for (const item of flatReferenceWords) {
@@ -821,7 +949,6 @@ btnUpload.onclick = async () => {
             return;
         }
 
-        // نمط التسميع والمطابقة
         const recitedWords = transcription.split(/\s+/).filter(Boolean);
         const cleanRef = flatReferenceWords.map(w => cleanArabic(w.text_imlaei_single));
         const cleanRec = recitedWords.map(w => cleanArabic(w));
@@ -886,132 +1013,10 @@ btnUpload.onclick = async () => {
     } finally {
         btnUpload.disabled = false;
     }
-}
-let dynamicAudioModels = []; // هنا ستتخزن الموديلات المتاحة لهذا المفتاح
+};
 
-async function fetchValidAudioModels(apiKey) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-    
-    // إنشاء AbortController لتحديد مهلة 8 ثوانٍ
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-    try {
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`تعذر جلب الموديلات (كود: ${response.status})`);
-        }
-
-        const data = await response.json();
-        const rawModels = data.models || [];
-
-        // فلترة دقيقة: استخراج موديلات Flash و Pro التي تدعم الصوت فقط
-        // استبعاد موديلات الصور، التوليد الصوتي TTS، الروبوتات، والنصوص فقط
-        const filtered = rawModels
-            .filter(m => {
-                const name = m.name.toLowerCase();
-                const methods = m.supportedGenerationMethods || [];
-                
-                const supportsGenerate = methods.includes("generateContent");
-                const isGeminiFamily = name.includes("gemini");
-                const isExcluded = name.includes("image") || 
-                                   name.includes("tts") || 
-                                   name.includes("robotics") || 
-                                   name.includes("computer-use");
-
-                return supportsGenerate && isGeminiFamily && !isExcluded;
-            })
-            .map(m => m.name.replace("models/", "")); // تنظيف الاسم ليصبح مثلاً gemini-2.5-flash
-
-        // ترتيب الموديلات: إعطاء الأولوية للنسخ الأسرع والأعلى كوتة (Flash)
-        filtered.sort((a, b) => {
-            const aIsFlash = a.includes("flash") ? 1 : 0;
-            const bIsFlash = b.includes("flash") ? 1 : 0;
-            return bIsFlash - aIsFlash;
-        });
-
-        dynamicAudioModels = filtered;
-        console.log("الموديلات الصوتية الصالحة للحساب:", dynamicAudioModels);
-        return dynamicAudioModels;
-
-    } catch (err) {
-        clearTimeout(timeoutId);
-        console.warn("فشل جلب القائمة ديناميكياً، سيتم استخدام القائمة الاحتياطية:", err);
-        // قائمة احتياطية افتراضية في حال وجود بطء في الاتصال
-        dynamicAudioModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
-        return dynamicAudioModels;
-    }
-}
-async function callGeminiWithAutoFallback(apiKey, requestBody) {
-    // إذا لم تكن القائمة جاهزة بعد، يتم جلبها أولاً
-    if (!dynamicAudioModels || dynamicAudioModels.length === 0) {
-        await fetchValidAudioModels(apiKey);
-    }
-
-    let lastErrorMessage = "";
-
-    for (const modelName of dynamicAudioModels) {
-        try {
-            statusTxt.textContent = `🤖 جاري الفحص عبر (${modelName})...`;
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            const data = await response.json();
-
-            // فحص وجود أخطاء من السيرفر
-            if (data.error) {
-                const code = data.error.code;
-                const msg = data.error.message || "";
-                lastErrorMessage = msg;
-
-                // خطأ كوتة المفتاح نفسه: لا فائدة من إكمال باقي الموديلات بنفس المفتاح
-                if (code === 429) {
-                    throw new Error("نفدت كوتة هذا المفتاح حالياً (Rate Limit). يرجى الانتظار دقيقة أو التبديل لمفتاح آخر.");
-                }
-
-                // خطأ ضغط (503) أو موديل غير متجاوب: حوّل للموديل التالي فوراً
-                console.warn(`الموديل ${modelName} غير متاح أو مضغوط (${code}). جاري التحويل للموديل التالي...`);
-                continue;
-            }
-
-            // التأكد من وصول النص
-            if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-                console.warn(`الموديل ${modelName} لم يُرجع نصوصاً صالحة.`);
-                continue;
-            }
-
-            // نجاح العملية
-            return data.candidates[0].content.parts[0].text.trim();
-
-        } catch (err) {
-            if (err.message.includes("Rate Limit")) {
-                throw err;
-            }
-            console.warn(`خطأ أثناء الاتصال بالموديل ${modelName}:`, err);
-        }
-    }
-
-    throw new Error(`تعذر التقييم بعد تجربة الموديلات المتاحة. آخر تنبيه: ${lastErrorMessage || "يرجى المحاولة مجدداً"}`);
-}
-// في المكان الذي تحفظ فيه المفتاح (زر الحفظ أو تغيير الحقل)
-apiKeyInput.addEventListener('change', async (e) => {
-    const key = e.target.value.trim();
-    if (key.length > 20) {
-        statusTxt.textContent = "⏳ جاري فحص المفتاح وجلب الموديلات المتاحة...";
-        const models = await fetchValidAudioModels(key);
-        if (models.length > 0) {
-            statusTxt.textContent = `✅ المفتاح جاهز! تم تفعيل ${models.length} موديل متوافق.`;
-        }
-    }
-});
+// تهيئة أولية عند تشغيل الصفحة
+refreshKeyUI(true);
 </script>
 </body>
 </html>
