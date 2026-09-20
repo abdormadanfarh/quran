@@ -158,7 +158,7 @@
         </div>
     </div>
 
-    <!-- 4. نافذة الإعدادات وإدارة المفاتيح المتعددة (Settings Modal) -->
+    <!-- 4. نافذة الإعدادات وإدارة المفاتيح والموديلات -->
     <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-100 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b pb-3">
@@ -206,7 +206,7 @@
     <audio id="audioPlayer"></audio>
 
 <script>
-// قائمة السور
+// قائمة السور الكريمة
 const SURAHS = [
     {id: 1, name: "الفاتحة", verses: 7}, {id: 2, name: "البقرة", verses: 286}, {id: 3, name: "آل عمران", verses: 200},
     {id: 4, name: "النساء", verses: 176}, {id: 5, name: "المائدة", verses: 120}, {id: 6, name: "الأنعام", verses: 165},
@@ -368,7 +368,7 @@ async function fetchValidAudioModels(apiKey) {
             })
             .map(m => m.name.replace("models/", ""));
 
-        // ترتيب: موديلات Flash ذات الكفاءة العالية أولاً
+        // ترتيب الموديلات السريعة Flash أولاً
         filtered.sort((a, b) => {
             const aFlash = a.includes("flash") ? 1 : 0;
             const bFlash = b.includes("flash") ? 1 : 0;
@@ -377,12 +377,12 @@ async function fetchValidAudioModels(apiKey) {
 
         dynamicAudioModels = filtered.length > 0 ? filtered : ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
         updateModelSelectUI(dynamicAudioModels);
-        modelStatusHint.textContent = `✅ تم كشف وتفعيل ${dynamicAudioModels.length} موديل صالح لصوتيات هذا الحساب.`;
+        modelStatusHint.textContent = `✅ تم تفعيل ${dynamicAudioModels.length} موديل متوافق مع الصوتيات.`;
         return dynamicAudioModels;
 
     } catch (err) {
         clearTimeout(timeoutId);
-        console.warn("فشل الاتصال بجوجل لكشف الموديلات، تفعيل الموديلات الافتراضية:", err);
+        console.warn("فشل كشف الموديلات، الاعتماد على القائمة الافتراضية:", err);
         dynamicAudioModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
         updateModelSelectUI(dynamicAudioModels);
         modelStatusHint.textContent = "⚠️ استخدمنا قائمة الموديلات الافتراضية.";
@@ -425,7 +425,7 @@ btnAddKey.onclick = async () => {
     const val = newKeyValue.value.trim();
     const name = newKeyName.value.trim() || `مفتاح ${apiKeys.length + 1}`;
     if (!val) {
-        alert("يرجى وضع المفتاح أولاً!");
+        alert("يرجى إدخال المفتاح أولاً!");
         return;
     }
     
@@ -437,7 +437,7 @@ btnAddKey.onclick = async () => {
     btnAddKey.textContent = "+ فحص وحفظ المفتاح";
 
     if (models.length === 0) {
-        alert("المفتاح غير صالح أو لم يستطع الاتصال بسيرفرات جوجل!");
+        alert("المفتاح غير صالح أو تعذر الاتصال بسيرفرات جوجل!");
         return;
     }
 
@@ -448,7 +448,7 @@ btnAddKey.onclick = async () => {
     newKeyName.value = '';
     newKeyValue.value = '';
     await refreshKeyUI(false);
-    alert(`✅ تم حفظ وتفعيل المفتاح مع ${models.length} موديل متاح!`);
+    alert(`✅ تم حفظ وتفعيل المفتاح وتوفير ${models.length} موديل بنجاح!`);
 };
 
 btnDeleteKey.onclick = async () => {
@@ -766,13 +766,12 @@ function blobToBase64(blob) {
     });
 }
 
-// دالة الفحص الذكي مع Fallback التلقائي
+// دالة الفحص عبر الموديل مع Fallback التلقائي
 async function callGeminiWithAutoFallback(apiKey, requestBody) {
     if (!dynamicAudioModels || dynamicAudioModels.length === 0) {
         await fetchValidAudioModels(apiKey);
     }
 
-    // جعل الموديل المختار يدوياً في مقدمة المحاولة
     const selectedModel = modelSelect.value;
     const modelsToTry = [selectedModel, ...dynamicAudioModels.filter(m => m !== selectedModel)];
 
@@ -802,7 +801,7 @@ async function callGeminiWithAutoFallback(apiKey, requestBody) {
                     throw new Error("نفدت كوتة هذا المفتاح حالياً (Rate Limit). يرجى الانتظار دقيقة أو التبديل لمفتاح آخر.");
                 }
 
-                console.warn(`الموديل ${modelName} غير متاح أو مضغوط (${code}). التبديل للبديل التالي...`);
+                console.warn(`الموديل ${modelName} غير متاح أو مضغوط (${code}). التحويل للبديل...`);
                 continue;
             }
 
@@ -894,16 +893,20 @@ btnUpload.onclick = async () => {
 
         statusTxt.textContent = "⏳ جاري جلب نص المصحف والمطابقة...";
 
+        // جلب كلمات الآيات وترتيبها بدقة وفق الـ position لضمان ظهور أول كلمة دائماً
         const refWords = [];
         for (let a = targetStart; a <= targetEnd; a++) {
             const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${targetSurah}:${a}?words=true&word_fields=text_imlaei,text_uthmani,position`);
             const json = await res.json();
-            for (const w of json.verse.words) {
-                if (w.char_type_name === "word") {
+            
+            const wordsList = (json.verse.words || []).sort((w1, w2) => w1.position - w2.position);
+
+            for (const w of wordsList) {
+                if (w.text_uthmani && (w.char_type_name === "word" || w.text_imlaei)) {
                     refWords.push({
                         verse_key: `${targetSurah}:${a}`,
                         text_uthmani: w.text_uthmani,
-                        text_imlaei: w.text_imlaei
+                        text_imlaei: w.text_imlaei || w.text_uthmani
                     });
                 }
             }
@@ -912,28 +915,19 @@ btnUpload.onclick = async () => {
         const flatReferenceWords = [];
         for (let idx = 0; idx < refWords.length; idx++) {
             const item = refWords[idx];
-            const rawImlaei = cleanArabic(item.text_imlaei || '');
+            const rawImlaei = cleanArabic(item.text_imlaei || item.text_uthmani || '');
             if (!rawImlaei) continue;
 
-            const subWords = item.text_imlaei.split(/\s+/).filter(Boolean);
-            for (let sIdx = 0; sIdx < subWords.length; sIdx++) {
-                const sub = subWords[sIdx];
-                if (cleanArabic(sub)) {
-                    const displayUthmani = (sIdx === 0) ? item.text_uthmani : "";
-                    let isLastInVerse = (sIdx === subWords.length - 1) && 
-                        (idx === refWords.length - 1 || refWords[idx+1].verse_key !== item.verse_key);
-                    
-                    const ayahNum = item.verse_key.split(':')[1];
-                    const ayahMarker = isLastInVerse ? ` <span class="text-amber-600 font-sans text-lg">﴿${toArabicNumber(ayahNum)}﴾</span>` : "";
+            const isLastInVerse = (idx === refWords.length - 1) || (refWords[idx + 1].verse_key !== item.verse_key);
+            const ayahNum = item.verse_key.split(':')[1];
+            const ayahMarker = isLastInVerse ? ` <span class="text-amber-600 font-sans text-lg">﴿${toArabicNumber(ayahNum)}﴾</span>` : "";
 
-                    flatReferenceWords.push({
-                        verse_key: item.verse_key,
-                        text_uthmani: displayUthmani,
-                        text_imlaei_single: sub,
-                        ayah_marker: ayahMarker
-                    });
-                }
-            }
+            flatReferenceWords.push({
+                verse_key: item.verse_key,
+                text_uthmani: item.text_uthmani,
+                text_imlaei_single: item.text_imlaei,
+                ayah_marker: ayahMarker
+            });
         }
 
         if (intent === 'display_only') {
@@ -1015,7 +1009,7 @@ btnUpload.onclick = async () => {
     }
 };
 
-// تهيئة أولية عند تشغيل الصفحة
+// تشغيل الفحص الأولي عند فتح الصفحة
 refreshKeyUI(true);
 </script>
 </body>
