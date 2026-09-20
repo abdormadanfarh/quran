@@ -886,7 +886,132 @@ btnUpload.onclick = async () => {
     } finally {
         btnUpload.disabled = false;
     }
-};
+}
+let dynamicAudioModels = []; // هنا ستتخزن الموديلات المتاحة لهذا المفتاح
+
+async function fetchValidAudioModels(apiKey) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+    
+    // إنشاء AbortController لتحديد مهلة 8 ثوانٍ
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+    try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`تعذر جلب الموديلات (كود: ${response.status})`);
+        }
+
+        const data = await response.json();
+        const rawModels = data.models || [];
+
+        // فلترة دقيقة: استخراج موديلات Flash و Pro التي تدعم الصوت فقط
+        // استبعاد موديلات الصور، التوليد الصوتي TTS، الروبوتات، والنصوص فقط
+        const filtered = rawModels
+            .filter(m => {
+                const name = m.name.toLowerCase();
+                const methods = m.supportedGenerationMethods || [];
+                
+                const supportsGenerate = methods.includes("generateContent");
+                const isGeminiFamily = name.includes("gemini");
+                const isExcluded = name.includes("image") || 
+                                   name.includes("tts") || 
+                                   name.includes("robotics") || 
+                                   name.includes("computer-use");
+
+                return supportsGenerate && isGeminiFamily && !isExcluded;
+            })
+            .map(m => m.name.replace("models/", "")); // تنظيف الاسم ليصبح مثلاً gemini-2.5-flash
+
+        // ترتيب الموديلات: إعطاء الأولوية للنسخ الأسرع والأعلى كوتة (Flash)
+        filtered.sort((a, b) => {
+            const aIsFlash = a.includes("flash") ? 1 : 0;
+            const bIsFlash = b.includes("flash") ? 1 : 0;
+            return bIsFlash - aIsFlash;
+        });
+
+        dynamicAudioModels = filtered;
+        console.log("الموديلات الصوتية الصالحة للحساب:", dynamicAudioModels);
+        return dynamicAudioModels;
+
+    } catch (err) {
+        clearTimeout(timeoutId);
+        console.warn("فشل جلب القائمة ديناميكياً، سيتم استخدام القائمة الاحتياطية:", err);
+        // قائمة احتياطية افتراضية في حال وجود بطء في الاتصال
+        dynamicAudioModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+        return dynamicAudioModels;
+    }
+}
+async function callGeminiWithAutoFallback(apiKey, requestBody) {
+    // إذا لم تكن القائمة جاهزة بعد، يتم جلبها أولاً
+    if (!dynamicAudioModels || dynamicAudioModels.length === 0) {
+        await fetchValidAudioModels(apiKey);
+    }
+
+    let lastErrorMessage = "";
+
+    for (const modelName of dynamicAudioModels) {
+        try {
+            statusTxt.textContent = `🤖 جاري الفحص عبر (${modelName})...`;
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.json();
+
+            // فحص وجود أخطاء من السيرفر
+            if (data.error) {
+                const code = data.error.code;
+                const msg = data.error.message || "";
+                lastErrorMessage = msg;
+
+                // خطأ كوتة المفتاح نفسه: لا فائدة من إكمال باقي الموديلات بنفس المفتاح
+                if (code === 429) {
+                    throw new Error("نفدت كوتة هذا المفتاح حالياً (Rate Limit). يرجى الانتظار دقيقة أو التبديل لمفتاح آخر.");
+                }
+
+                // خطأ ضغط (503) أو موديل غير متجاوب: حوّل للموديل التالي فوراً
+                console.warn(`الموديل ${modelName} غير متاح أو مضغوط (${code}). جاري التحويل للموديل التالي...`);
+                continue;
+            }
+
+            // التأكد من وصول النص
+            if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+                console.warn(`الموديل ${modelName} لم يُرجع نصوصاً صالحة.`);
+                continue;
+            }
+
+            // نجاح العملية
+            return data.candidates[0].content.parts[0].text.trim();
+
+        } catch (err) {
+            if (err.message.includes("Rate Limit")) {
+                throw err;
+            }
+            console.warn(`خطأ أثناء الاتصال بالموديل ${modelName}:`, err);
+        }
+    }
+
+    throw new Error(`تعذر التقييم بعد تجربة الموديلات المتاحة. آخر تنبيه: ${lastErrorMessage || "يرجى المحاولة مجدداً"}`);
+}
+// في المكان الذي تحفظ فيه المفتاح (زر الحفظ أو تغيير الحقل)
+apiKeyInput.addEventListener('change', async (e) => {
+    const key = e.target.value.trim();
+    if (key.length > 20) {
+        statusTxt.textContent = "⏳ جاري فحص المفتاح وجلب الموديلات المتاحة...";
+        const models = await fetchValidAudioModels(key);
+        if (models.length > 0) {
+            statusTxt.textContent = `✅ المفتاح جاهز! تم تفعيل ${models.length} موديل متوافق.`;
+        }
+    }
+});
 </script>
 </body>
 </html>
