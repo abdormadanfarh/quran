@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المسمّع القرآني الشامل</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23059669%22/><text x=%2250%%22 y=%2255%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>✨</text></svg>">
+    <title>المسمّع القرآني التفاعلي</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%23059669%22/><text x=%2250%%22 y=%2255%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2260%22>📖</text></svg>">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,7 +39,6 @@
             </div>
 
             <div class="flex items-center gap-2">
-                <!-- أزرار التبديل بين الأوضاع -->
                 <div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200 text-xs">
                     <button id="tabAuto" class="px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white shadow-sm transition">
                         ⚡ تلقائي
@@ -49,8 +48,7 @@
                     </button>
                 </div>
 
-                <!-- زر الترس للإعدادات -->
-                <button id="btnOpenSettings" class="p-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-full transition" title="الإعدادات">
+                <button id="btnOpenSettings" class="p-2 text-slate-600 hover:text-emerald-700 hover:bg-slate-100 rounded-full transition" title="إدارة المفاتيح والموديلات">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -85,7 +83,7 @@
     <!-- المحتوى الرئيسي -->
     <main class="max-w-3xl mx-auto px-4 space-y-4">
         
-        <!-- بطاقة الاختيار اليدوي (مخفية في الوضع التلقائي) -->
+        <!-- بطاقة الاختيار اليدوي -->
         <div id="manualPickerCard" class="hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
             <h3 class="font-bold text-slate-700 text-sm">حدد موضع التلاوة للتسميع:</h3>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
@@ -162,32 +160,48 @@
         </div>
     </div>
 
-    <!-- نافذة الإعدادات (Settings Modal) -->
+    <!-- نافذة الإعدادات الشاملة (المفاتيح + استعلام الموديلات الحية) -->
     <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-100">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-slate-100 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b pb-3">
-                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">⚙️ إعدادات الذكاء الاصطناعي</h3>
+                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">⚙️ إدارة المفاتيح والموديلات المتاحة</h3>
                 <button id="btnCloseSettings" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
 
-            <div class="space-y-3 text-sm">
-                <div>
-                    <label class="block font-medium text-slate-700 mb-1">Gemini API Key:</label>
-                    <input type="password" id="apiKey" placeholder="AIzaSy..." class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+            <div class="space-y-4 text-sm">
+                <!-- قسم إضافة مفتاح جديد -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                    <label class="block font-bold text-slate-700 text-xs">إضافة مفتاح API جديد:</label>
+                    <div class="flex gap-2">
+                        <input type="password" id="newApiKeyInput" placeholder="AIzaSy..." class="flex-grow p-2 border border-slate-300 rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-emerald-500">
+                        <button id="btnAddKey" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg font-bold transition">إضافة</button>
+                    </div>
                 </div>
 
+                <!-- اختيار المفتاح النشط وقائمته -->
                 <div>
-                    <label class="block font-medium text-slate-700 mb-1">الموديل المستخدم:</label>
-                    <select id="modelSelect" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 outline-none">
-                        <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
-                        <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                    </select>
+                    <label class="block font-bold text-slate-700 mb-1 text-xs">المفتاح النشط المستخدم حالياً:</label>
+                    <div class="flex gap-2">
+                        <select id="activeKeySelect" class="flex-grow p-2.5 border border-slate-300 rounded-xl bg-slate-50 outline-none font-mono text-xs"></select>
+                        <button id="btnDeleteKey" class="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-3 py-2 rounded-xl text-xs font-bold transition" title="حذف المفتاح المحدد">حذف</button>
+                    </div>
+                </div>
+
+                <!-- قائمة الموديلات التي يتم جلبها تلقائياً من جوجل -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700 text-xs">الموديل (يتم جلبه تلقائياً من حسابك):</label>
+                        <button id="btnRefreshModels" class="text-emerald-600 hover:text-emerald-700 text-xs flex items-center gap-1 font-medium">
+                            <span>🔄</span> تحديث الموديلات
+                        </button>
+                    </div>
+                    <select id="modelSelect" class="w-full p-2.5 border border-slate-300 rounded-xl bg-slate-50 outline-none text-xs font-mono"></select>
+                    <p id="modelFetchStatus" class="text-[11px] text-slate-400 mt-1"></p>
                 </div>
             </div>
 
             <div class="pt-2 flex justify-end">
-                <button id="btnSaveSettings" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-medium">حفظ</button>
+                <button id="btnSaveSettings" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-medium">حفظ وإغلاق</button>
             </div>
         </div>
     </div>
@@ -202,7 +216,12 @@ let currentAudioBlob = null;
 let mediaStream = null;
 let currentFileName = "recitation.webm";
 
-// العناصر
+// إدارة المفاتيح والموديلات المتاحة
+let apiKeysList = JSON.parse(localStorage.getItem('gemini_api_keys_list') || '[]');
+let activeKey = localStorage.getItem('gemini_active_key') || (apiKeysList[0] || '');
+let selectedModel = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
+
+// عناصر الواجهة
 const tabAuto = document.getElementById('tabAuto');
 const tabManual = document.getElementById('tabManual');
 const manualPickerCard = document.getElementById('manualPickerCard');
@@ -212,8 +231,14 @@ const fromAyah = document.getElementById('fromAyah');
 const toAyah = document.getElementById('toAyah');
 const lblImport = document.getElementById('lblImport');
 
-const apiKeyInput = document.getElementById('apiKey');
+const newApiKeyInput = document.getElementById('newApiKeyInput');
+const btnAddKey = document.getElementById('btnAddKey');
+const activeKeySelect = document.getElementById('activeKeySelect');
+const btnDeleteKey = document.getElementById('btnDeleteKey');
 const modelSelect = document.getElementById('modelSelect');
+const btnRefreshModels = document.getElementById('btnRefreshModels');
+const modelFetchStatus = document.getElementById('modelFetchStatus');
+
 const settingsModal = document.getElementById('settingsModal');
 const btnOpenSettings = document.getElementById('btnOpenSettings');
 const btnCloseSettings = document.getElementById('btnCloseSettings');
@@ -250,19 +275,141 @@ const statsBar = document.getElementById('statsBar');
 const correctBadge = document.getElementById('correctBadge');
 const mistakeBadge = document.getElementById('mistakeBadge');
 
-// استرجاع الإعدادات
-if (localStorage.getItem('gemini_api_key')) apiKeyInput.value = localStorage.getItem('gemini_api_key');
-if (localStorage.getItem('gemini_model')) modelSelect.value = localStorage.getItem('gemini_model');
+// 1. منطق إدارة المفاتيح والموديلات (التي تم استرجاعها)
+function maskKey(key) {
+    if (!key || key.length < 8) return key;
+    return key.slice(0, 6) + '...' + key.slice(-4);
+}
+
+function updateKeysDropdown() {
+    activeKeySelect.innerHTML = '';
+    if (apiKeysList.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'لا توجد مفاتيح محفوظة';
+        activeKeySelect.appendChild(opt);
+        modelSelect.innerHTML = '<option value="">يرجى إضافة مفتاح أولاً</option>';
+        return;
+    }
+
+    apiKeysList.forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = maskKey(key);
+        if (key === activeKey) opt.selected = true;
+        activeKeySelect.appendChild(opt);
+    });
+}
+
+async function fetchModelsForKey(key) {
+    if (!key) return;
+    modelFetchStatus.textContent = "⏳ جاري استعلام الموديلات المتاحة لمفتاحك من جوجل...";
+    modelSelect.innerHTML = '<option>جاري التحميل...</option>';
+
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+        const data = await res.json();
+        
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        // تصفية الموديلات التي تدعم إنشاء وتوليد المحتوى generateContent
+        const validModels = (data.models || []).filter(m => 
+            m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")
+        );
+
+        if (validModels.length === 0) {
+            modelSelect.innerHTML = '<option value="gemini-2.5-flash">gemini-2.5-flash (افتراضي)</option>';
+            modelFetchStatus.textContent = "⚠️ لم نجد موديلات مخصصة، تم وضع الافتراضي.";
+            return;
+        }
+
+        modelSelect.innerHTML = '';
+        validModels.forEach(m => {
+            const cleanName = m.name.replace('models/', '');
+            const opt = document.createElement('option');
+            opt.value = cleanName;
+            opt.textContent = `${cleanName} (${m.displayName || ''})`;
+            if (cleanName === selectedModel) opt.selected = true;
+            modelSelect.appendChild(opt);
+        });
+
+        // إذا لم يكن الموديل المخزن متوفراً، نعتمد أول موديل
+        if (!validModels.some(m => m.name.replace('models/', '') === selectedModel)) {
+            selectedModel = modelSelect.value;
+            localStorage.setItem('gemini_model', selectedModel);
+        }
+
+        modelFetchStatus.textContent = `✅ تم جلب ${validModels.length} موديل بنجاح.`;
+    } catch (err) {
+        console.error("فشل جلب الموديلات:", err);
+        modelSelect.innerHTML = `
+            <option value="gemini-2.5-flash">gemini-2.5-flash (تلقائي)</option>
+            <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+        `;
+        modelFetchStatus.textContent = "❌ تعذر جلب الموديلات الحية، تم تفعيل الموديلات القياسية.";
+    }
+}
+
+// أحداث المفاتيح
+btnAddKey.onclick = async () => {
+    const val = newApiKeyInput.value.trim();
+    if (!val) return;
+    if (!apiKeysList.includes(val)) {
+        apiKeysList.push(val);
+        activeKey = val;
+        localStorage.setItem('gemini_api_keys_list', JSON.stringify(apiKeysList));
+        localStorage.setItem('gemini_active_key', activeKey);
+        updateKeysDropdown();
+        newApiKeyInput.value = '';
+        await fetchModelsForKey(activeKey);
+    }
+};
+
+btnDeleteKey.onclick = async () => {
+    if (!activeKey) return;
+    apiKeysList = apiKeysList.filter(k => k !== activeKey);
+    activeKey = apiKeysList[0] || '';
+    localStorage.setItem('gemini_api_keys_list', JSON.stringify(apiKeysList));
+    localStorage.setItem('gemini_active_key', activeKey);
+    updateKeysDropdown();
+    if (activeKey) {
+        await fetchModelsForKey(activeKey);
+    } else {
+        modelSelect.innerHTML = '';
+    }
+};
+
+activeKeySelect.onchange = async () => {
+    activeKey = activeKeySelect.value;
+    localStorage.setItem('gemini_active_key', activeKey);
+    await fetchModelsForKey(activeKey);
+};
+
+btnRefreshModels.onclick = () => {
+    if (activeKey) fetchModelsForKey(activeKey);
+};
+
+modelSelect.onchange = () => {
+    selectedModel = modelSelect.value;
+    localStorage.setItem('gemini_model', selectedModel);
+};
 
 btnOpenSettings.onclick = () => settingsModal.classList.remove('hidden');
 btnCloseSettings.onclick = () => settingsModal.classList.add('hidden');
 btnSaveSettings.onclick = () => {
-    localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
-    localStorage.setItem('gemini_model', modelSelect.value);
     settingsModal.classList.add('hidden');
 };
 
-// التبديل بين التلقائي واليدوي
+// تهيئة المفاتيح عند الإقلاع
+updateKeysDropdown();
+if (activeKey) {
+    fetchModelsForKey(activeKey);
+}
+
+// 2. التبديل بين التلقائي واليدوي
 tabAuto.onclick = () => {
     currentMode = 'auto';
     tabAuto.className = "px-3 py-1.5 rounded-lg font-bold bg-emerald-600 text-white shadow-sm transition";
@@ -302,7 +449,7 @@ function updateAyahBounds() {
 surahSelect.onchange = updateAyahBounds;
 loadSurahs();
 
-// طي / إظهار أزرار التحكم
+// 3. كبسولة التحكم والعرض المريح
 let dockVisible = true;
 btnToggleDock.onclick = () => {
     dockVisible = !dockVisible;
@@ -348,7 +495,6 @@ audioPlayer.onloadedmetadata = () => {
 audioPlayer.onended = () => { playerPlayIcon.textContent = "▶"; };
 audioSeeker.oninput = () => { audioPlayer.currentTime = audioSeeker.value; };
 
-// مضاعفة التقديم والتأخير
 let rewindClicks = 0, rewindTimer = null;
 btnRewind.onclick = () => {
     rewindClicks++;
@@ -369,7 +515,7 @@ btnForward.onclick = () => {
     forwardTimer = setTimeout(() => { forwardClicks = 0; forwardLbl.textContent = "2s"; }, 1200);
 };
 
-// حفظ واستيراد
+// 4. التسجيل وحفظ الصوت
 btnSave.onclick = () => {
     if (!currentAudioBlob) return;
     const url = URL.createObjectURL(currentAudioBlob);
@@ -380,7 +526,7 @@ btnSave.onclick = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    statusTxt.textContent = `💾 تم تنزيل: ${currentFileName}`;
+    statusTxt.textContent = `💾 تم تنزيل الملف: ${currentFileName}`;
 };
 
 fileImport.addEventListener('change', (e) => {
@@ -397,7 +543,6 @@ fileImport.addEventListener('change', (e) => {
     statusTxt.textContent = `📁 تم استيراد: ${file.name}`;
 });
 
-// التسجيل المباشر
 btnRecord.onclick = async () => {
     try {
         if (!audioPlayer.paused) audioPlayer.pause();
@@ -460,6 +605,7 @@ btnStop.onclick = () => {
     }
 };
 
+// 5. أدوات المقارنة والتنظيف
 function cleanArabic(text) {
     if (!text) return "";
     return text
@@ -544,16 +690,15 @@ function blobToBase64(blob) {
     });
 }
 
-// زر الفحص والمطابقة
+// 6. الفحص والمطابقة
 btnUpload.onclick = async () => {
-    const key = apiKeyInput.value.trim();
-    if (!key) {
+    if (!activeKey) {
         settingsModal.classList.remove('hidden');
-        alert("يرجى إدخال مفتاح API أولاً!");
+        alert("يرجى إضافة أو اختيار مفتاح API أولاً من الإعدادات!");
         return;
     }
 
-    const activeModel = modelSelect.value;
+    const targetModel = selectedModel || 'gemini-2.5-flash';
     statusTxt.textContent = "🔍 جاري تحليل الصوت وفحص التلاوة...";
     btnUpload.disabled = true;
 
@@ -597,7 +742,7 @@ btnUpload.onclick = async () => {
 }`;
         }
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${key}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${activeKey}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -614,7 +759,6 @@ btnUpload.onclick = async () => {
 
         statusTxt.textContent = "⏳ جاري مطابقة الآيات مع المصحف...";
 
-        // جلب كلمات المصحف
         const refWords = [];
         for (let a = start_ayah; a <= end_ayah; a++) {
             const apiRes = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surah_number}:${a}?words=true&word_fields=text_imlaei,text_uthmani,position`);
