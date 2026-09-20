@@ -14,7 +14,17 @@
 
     <style>
         body { font-family: 'Tajawal', sans-serif; }
-        .quran-font { font-family: 'Amiri', serif; }
+        .quran-font { 
+            font-family: 'Amiri', serif; 
+            line-height: 3.4 !important; /* مسافة أسطر واسعة ومريحة جداً للشاشات الكبيرة */
+            word-spacing: 6px;
+        }
+        @media (max-width: 640px) {
+            .quran-font {
+                line-height: 2.8 !important;
+                word-spacing: 3px;
+            }
+        }
         input[type="range"]::-webkit-slider-thumb {
             appearance: none;
             width: 14px;
@@ -29,7 +39,7 @@
 
     <!-- 1. شريط التنقل العلوي -->
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm mb-4">
-        <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-2xl">📖</span>
                 <div>
@@ -56,7 +66,7 @@
         </div>
 
         <!-- مشغل الصوت المدمج -->
-        <div id="playerBar" class="max-w-3xl mx-auto px-4 py-2 bg-slate-100/90 border-t border-slate-200 hidden transition-all">
+        <div id="playerBar" class="max-w-4xl mx-auto px-4 py-2 bg-slate-100/90 border-t border-slate-200 hidden transition-all">
             <div class="flex items-center gap-3">
                 <button id="btnPlayerPlay" class="w-9 h-9 flex items-center justify-center rounded-full bg-emerald-600 text-white shadow hover:bg-emerald-700 transition flex-shrink-0">
                     <span id="playerPlayIcon">▶</span>
@@ -79,7 +89,7 @@
     </header>
 
     <!-- 2. المحتوى الرئيسي -->
-    <main class="max-w-3xl mx-auto px-4 space-y-4">
+    <main class="max-w-4xl mx-auto px-4 space-y-4">
         
         <!-- حقول التحديد اليدوي -->
         <div id="manualPickerCard" class="hidden bg-white border border-slate-200 rounded-2xl p-4 shadow-sm transition">
@@ -120,8 +130,8 @@
         </div>
 
         <!-- مساحة عرض المصحف -->
-        <div id="unifiedResultArea" class="hidden bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-            <div id="quranContent" class="quran-font text-2xl sm:text-3xl leading-[2.6] text-justify text-slate-800"></div>
+        <div id="unifiedResultArea" class="hidden bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-sm">
+            <div id="quranContent" class="quran-font text-2xl sm:text-3xl text-justify text-slate-800 selection:bg-emerald-100"></div>
         </div>
     </main>
 
@@ -696,6 +706,26 @@ function cleanArabic(text) {
         .trim();
 }
 
+// دالة ذكية لإزالة نطق أرقام الآيات والكلمات الدخيلة من التسجيل
+function filterSpokenAyahNumbers(words) {
+    const numberWords = new Set([
+        'ايه', 'رقم', 'مائه', 'ميه', 'مائتان', 'ميتين', 'ثلاثمائه', 'اربعمائه', 'خمسمائه',
+        'واحد', 'اثنان', 'اثنين', 'ثلاثه', 'ثلاث', 'اربعه', 'اربع', 'خمسه', 'خمس', 'سته', 'ست',
+        'سبعه', 'سبع', 'ثمانيه', 'ثماني', 'ثمان', 'تسعه', 'تسع', 'عشره', 'عشر', 'عشرين', 'عشرون',
+        'ثلاثين', 'ثلاثون', 'اربعين', 'اربعون', 'خمسين', 'خمسون', 'ستين', 'ستون', 'سبعين', 'سبعون',
+        'ثمانين', 'ثمانون', 'تسعين', 'تسعون'
+    ]);
+
+    return words.filter(w => {
+        const cleaned = cleanArabic(w);
+        // استبعاد الأرقام الحسابية الصريحة
+        if (/^\d+$/.test(w) \vert{}\vert{} /^[\u0660-\u0669]+$/.test(w)) return false;
+        // استبعاد الكلمات التي تطابق أسماء الأعداد
+        if (numberWords.has(cleaned)) return false;
+        return true;
+    });
+}
+
 function toArabicNumber(n) {
     const farsiDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return n.toString().replace(/\d/g, x => farsiDigits[x]);
@@ -848,7 +878,8 @@ btnUpload.onclick = async () => {
 2. حدد النية (intent): "display_only" إذا طلب فقط عرض السورة بصوته، أو "recite" إذا كان يتلو التلاوة.
 3. استخرج: surah_number (1-114), surah_name, start_ayah, end_ayah.
 4. فرغ النص المنطوق حرفياً (transcription) كما لفظ بدون تشكيل أو تصحيح من حفظك.
-5. الإخراج بصيغة JSON فقط:
+5. لا تكتب أرقام الآيات إذا لفظها القارئ (مثل: "مئة وتسعة وثمانون" أو "آية كذا")، فرغ آيات القرآن فقط.
+6. الإخراج بصيغة JSON فقط:
 {"intent": "recite", "surah_number": 1, "start_ayah": 1, "end_ayah": 7, "surah_name": "الفاتحة", "transcription": "..."}
 `;
             const reqBody = {
@@ -879,7 +910,7 @@ btnUpload.onclick = async () => {
                 return;
             }
 
-            const promptInstruction = `فرّغ الكلمات المنطوقة في التسجيل القرآني بدقة تامة بدون تشكيل، ولا تصحح أي خطأ من حفظك. أخرج النص فقط مباشرة.`;
+            const promptInstruction = `فرّغ الكلمات المنطوقة في التسجيل القرآني بدقة تامة بدون تشكيل، ولا تصحح أي خطأ من حفظك. لا تكتب رقم الآية إذا نطقها القارئ. أخرج النص فقط مباشرة.`;
             const reqBody = {
                 contents: [{ parts: [{ text: promptInstruction }, { inline_data: { mime_type: mimeType, data: base64Audio } }] }],
                 generationConfig: { temperature: 0.0 }
@@ -920,7 +951,7 @@ btnUpload.onclick = async () => {
 
             const isLastInVerse = (idx === refWords.length - 1) || (refWords[idx + 1].verse_key !== item.verse_key);
             const ayahNum = item.verse_key.split(':')[1];
-            const ayahMarker = isLastInVerse ? ` <span class="text-amber-600 font-sans text-lg">﴿${toArabicNumber(ayahNum)}﴾</span>` : "";
+            const ayahMarker = isLastInVerse ? ` <span class="text-amber-600 font-sans text-xl inline-block my-1 align-middle">﴿${toArabicNumber(ayahNum)}﴾</span>` : "";
 
             flatReferenceWords.push({
                 verse_key: item.verse_key,
@@ -933,7 +964,7 @@ btnUpload.onclick = async () => {
         if (intent === 'display_only') {
             let displayHtml = "";
             for (const item of flatReferenceWords) {
-                if (item.text_uthmani) displayHtml += `<span>${item.text_uthmani}</span> `;
+                if (item.text_uthmani) displayHtml += `<span class="inline-block my-1">${item.text_uthmani}</span> `;
                 if (item.ayah_marker) displayHtml += item.ayah_marker + " ";
             }
             quranContent.innerHTML = displayHtml;
@@ -943,7 +974,10 @@ btnUpload.onclick = async () => {
             return;
         }
 
-        const recitedWords = transcription.split(/\s+/).filter(Boolean);
+        // تفريغ الكلمات مع فلترة أي نطق لأرقام الآيات
+        const rawRecitedWords = transcription.split(/\s+/).filter(Boolean);
+        const recitedWords = filterSpokenAyahNumbers(rawRecitedWords);
+
         const cleanRef = flatReferenceWords.map(w => cleanArabic(w.text_imlaei_single));
         const cleanRec = recitedWords.map(w => cleanArabic(w));
         const opcodes = getDiffOpcodes(cleanRef, cleanRec);
@@ -956,7 +990,7 @@ btnUpload.onclick = async () => {
                 for (let idx = op.i1; idx < op.i2; idx++) {
                     correctCount++;
                     const item = flatReferenceWords[idx];
-                    if (item.text_uthmani) finalUnifiedHtml += `<span class="text-slate-800">${item.text_uthmani}</span> `;
+                    if (item.text_uthmani) finalUnifiedHtml += `<span class="text-slate-800 inline-block my-1">${item.text_uthmani}</span> `;
                     if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                 }
             } else if (op.tag === 'replace') {
@@ -969,26 +1003,26 @@ btnUpload.onclick = async () => {
                     const recW = k < recLen ? recitedWords[op.j1 + k] : null;
 
                     if (item && recW) {
-                        finalUnifiedHtml += `<span class="bg-red-100 text-red-700 border-b-2 border-red-500 px-1 rounded cursor-help" title="نطقت: ${recW}">${item.text_uthmani}</span> `;
+                        finalUnifiedHtml += `<span class="bg-red-100 text-red-700 border-b-2 border-red-500 px-1.5 py-0.5 rounded inline-block my-1 cursor-help" title="نطقت: ${recW}">${item.text_uthmani}</span> `;
                         if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                     } else if (item && !recW) {
-                        finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1 rounded cursor-help" title="منسية">${item.text_uthmani}</span> `;
+                        finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1.5 py-0.5 rounded inline-block my-1 cursor-help" title="منسية">${item.text_uthmani}</span> `;
                         if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                     } else if (!item && recW) {
-                        finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-1.5 py-0.5 rounded cursor-help" title="زيادة">+ (${recW})</span> `;
+                        finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-2 py-0.5 rounded inline-block my-1 cursor-help" title="زيادة">+ (${recW})</span> `;
                     }
                 }
             } else if (op.tag === 'delete') {
                 mistakesCount += (op.i2 - op.i1);
                 for (let idx = op.i1; idx < op.i2; idx++) {
                     const item = flatReferenceWords[idx];
-                    if (item.text_uthmani) finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1 rounded cursor-help" title="منسية">${item.text_uthmani}</span> `;
+                    if (item.text_uthmani) finalUnifiedHtml += `<span class="bg-red-50 text-red-600 border-b-2 border-dashed border-red-400 px-1.5 py-0.5 rounded inline-block my-1 cursor-help" title="منسية">${item.text_uthmani}</span> `;
                     if (item.ayah_marker) finalUnifiedHtml += item.ayah_marker + " ";
                 }
             } else if (op.tag === 'insert') {
                 mistakesCount += (op.j2 - op.j1);
                 for (let idx = op.j1; idx < op.j2; idx++) {
-                    finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-1.5 py-0.5 rounded cursor-help" title="زيادة">+ (${recitedWords[idx]})</span> `;
+                    finalUnifiedHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-400 text-base font-sans px-2 py-0.5 rounded inline-block my-1 cursor-help" title="زيادة">+ (${recitedWords[idx]})</span> `;
                 }
             }
         }
